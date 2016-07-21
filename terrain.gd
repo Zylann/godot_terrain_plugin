@@ -17,6 +17,7 @@ var _normals = null
 
 var _brush = null
 var _brush_sum = 0
+var _brush_radius = 6
 
 var _chunks = null
 var _chunks_x = 0
@@ -47,7 +48,7 @@ func _ready():
 			row[x] = chunk
 			update_chunk_at(x,y)
 	
-	_generate_brush(6)
+	_generate_brush(_brush_radius)
 	#generate_terrain()
 	if not get_tree().is_editor_hint():
 		set_process(true)
@@ -301,7 +302,18 @@ func raycast(origin, dir):
 
 
 func _input(event):
-	pass
+	if event.type == InputEvent.MOUSE_BUTTON and event.pressed:
+		if event.button_index == BUTTON_WHEEL_UP:
+			_set_brush_radius(_brush_radius+1)
+		elif event.button_index == BUTTON_WHEEL_DOWN:
+			_set_brush_radius(_brush_radius-1)
+
+
+func _set_brush_radius(r):
+	if r > 0 and r != _brush_radius:
+		_brush_radius = r
+		_generate_brush(r)
+		print("Change brush radius " + str(r))
 
 
 static func create_grid(w, h, v=null):
