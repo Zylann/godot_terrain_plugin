@@ -1,0 +1,145 @@
+[gd_scene load_steps=4 format=1]
+
+[ext_resource path="res://terrain.gd" type="Script" id=1]
+[ext_resource path="res://debug_camera.gd" type="Script" id=2]
+
+[sub_resource type="Environment" id=1]
+
+ambient_light/enabled = true
+ambient_light/color = Color( 0.0507813, 0.0507813, 0.0507813, 1 )
+ambient_light/energy = 1.0
+fxaa/enabled = false
+background/mode = 2
+background/color = Color( 0.407715, 0.563889, 0.625, 1 )
+background/energy = 1.0
+background/scale = 1.0
+background/glow = 0.0
+background/canvas_max_layer = null
+glow/enabled = false
+glow/blur_passes = 1
+glow/blur_scale = 1
+glow/blur_strength = 1
+glow/blur_blend_mode = null
+glow/bloom = 0.0
+glow/bloom_treshold = 0.5
+dof_blur/enabled = false
+dof_blur/blur_passes = 1
+dof_blur/begin = 100.0
+dof_blur/range = 10.0
+hdr/enabled = false
+hdr/tonemapper = 0
+hdr/exposure = 0.4
+hdr/white = 1.0
+hdr/glow_treshold = 0.95
+hdr/glow_scale = 0.2
+hdr/min_luminance = 0.4
+hdr/max_luminance = 8.0
+hdr/exposure_adj_speed = 0.5
+fog/enabled = true
+fog/begin = 5.0
+fog/begin_color = Color( 0.403922, 0.560784, 0.623529, 1 )
+fog/end_color = Color( 0.403922, 0.560784, 0.623529, 1 )
+fog/attenuation = 0.90125
+fog/bg = true
+bcs/enabled = false
+bcs/brightness = 1.0
+bcs/contrast = 1.0
+bcs/saturation = 1.0
+srgb/enabled = false
+
+[node name="Node" type="Node"]
+
+[node name="Terrain" type="Node" parent="."]
+
+script/script = ExtResource( 1 )
+terrain_size = 256
+
+[node name="Camera" type="Camera" parent="."]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( -1, 0, -8.74228e-08, -4.22154e-08, 0.875682, 0.482888, 7.65546e-08, 0.482888, -0.875682, 0, 6.30182, -8.60276 )
+projection = 0
+fov = 60.0
+near = 0.1
+far = 400.0
+keep_aspect = 1
+current = false
+visible_layers = 1048575
+environment = null
+h_offset = 0.0
+v_offset = 0.0
+script/script = ExtResource( 2 )
+sensitivity = 0.4
+min_angle = -90
+max_angle = 90
+speed = 10.0
+capture_mouse = true
+
+[node name="TestCube" type="TestCube" parent="."]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0 )
+layers = 1
+geometry/visible = true
+geometry/material_override = null
+geometry/cast_shadow = true
+geometry/receive_shadows = true
+geometry/range_begin = 0.0
+geometry/range_end = 0.0
+geometry/extra_cull_margin = 0.0
+geometry/billboard = false
+geometry/billboard_y = false
+geometry/depth_scale = false
+geometry/visible_in_all_rooms = false
+geometry/use_baked_light = false
+geometry/baked_light_tex_id = 0
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( 0.229906, -0.846385, 0.480391, -0.795788, 0.120659, 0.593433, -0.560237, -0.518723, -0.645802, 0, 7.00393, 0 )
+layers = 1
+params/enabled = true
+params/editor_only = false
+params/bake_mode = 0
+params/energy = 0.5
+colors/diffuse = Color( 0.690338, 1, 0.457031, 1 )
+colors/specular = Color( 1, 1, 1, 1 )
+shadow/shadow = true
+shadow/darkening = 0.2
+shadow/z_offset = 0.05
+shadow/z_slope_scale = 0.0
+shadow/esm_multiplier = 60.0
+shadow/blur_passes = 2.0
+projector = null
+operator = 0
+shadow/mode = 2
+shadow/max_distance = 0.0
+shadow/split_weight = 0.5
+shadow/zoffset_scale = 2.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+environment = SubResource( 1 )
+
+[node name="TestCube 2" type="TestCube" parent="."]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9.01333, 0.859018, 15.2331 )
+layers = 1
+geometry/visible = true
+geometry/material_override = null
+geometry/cast_shadow = true
+geometry/receive_shadows = true
+geometry/range_begin = 0.0
+geometry/range_end = 0.0
+geometry/extra_cull_margin = 0.0
+geometry/billboard = false
+geometry/billboard_y = false
+geometry/depth_scale = false
+geometry/visible_in_all_rooms = false
+geometry/use_baked_light = false
+geometry/baked_light_tex_id = 0
+
+
