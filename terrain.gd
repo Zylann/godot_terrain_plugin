@@ -1,4 +1,4 @@
-tool
+#tool
 extends Node
 
 const CHUNK_SIZE = 16
@@ -7,8 +7,10 @@ class Chunk:
 	var mesh_instance = null
 	var pos = Vector2(0,0)
 
-
+# TODO Make this dynamic
 export(int) var terrain_size = 64
+# TODO Make this dynamic
+export(Material) var material = null
 
 var _data = null
 var _normals = null
@@ -38,6 +40,8 @@ func _ready():
 			chunk.mesh_instance = MeshInstance.new()
 			chunk.mesh_instance.set_name("chunk_" + str(x) + "_" + str(y))
 			chunk.mesh_instance.set_translation(Vector3(x,0,y) * CHUNK_SIZE)
+			if material != null:
+				chunk.mesh_instance.set_material_override(material)
 			chunk.pos = Vector2(x,y)
 			add_child(chunk.mesh_instance)
 			row[x] = chunk
@@ -201,35 +205,44 @@ func generate_mesh_at(x0, y0, w, h):
 		var normal_row = _normals[y]
 		for x in range(x0, max_x):
 			
-			var h00 = row[x]
-			var h10 = row[x+1]
-			var h01 = _data[y+1][x]
-			var h11 = _data[y+1][x+1]
-			
-			st.add_color(Color(0,1,0))
+			var p00 = Vector3(x-x0, row[x], y-y0)
+			var p10 = Vector3(x+1-x0, row[x+1], y-y0)
+			var p01 = Vector3(x-x0, _data[y+1][x], y+1-y0)
+			var p11 = Vector3(x+1-x0, _data[y+1][x+1], y+1-y0)
 			
 			var n00 = normal_row[x]
 			var n10 = normal_row[x+1]
 			var n01 = _normals[y+1][x]
 			var n11 = _normals[y+1][x+1]
 			
+			var uv00 = Vector2(0,0)
+			var uv10 = Vector2(1,0)
+			var uv11 = Vector2(1,1)
+			var uv01 = Vector2(0,1)
+			
 			st.add_normal(n00)
-			st.add_vertex(Vector3(x-x0, h00, y-y0))
+			st.add_uv(uv00)
+			st.add_vertex(p00)
 			
 			st.add_normal(n10)
-			st.add_vertex(Vector3(x+1-x0, h10, y-y0))
+			st.add_uv(uv10)
+			st.add_vertex(p10)
 			
 			st.add_normal(n11)
-			st.add_vertex(Vector3(x+1-x0, h11, y+1-y0))
+			st.add_uv(uv11)
+			st.add_vertex(p11)
 
 			st.add_normal(n00)
-			st.add_vertex(Vector3(x-x0, h00, y-y0))
+			st.add_uv(uv00)
+			st.add_vertex(p00)
 			
 			st.add_normal(n11)
-			st.add_vertex(Vector3(x+1-x0, h11, y+1-y0))
+			st.add_uv(uv11)
+			st.add_vertex(p11)
 			
 			st.add_normal(n01)
-			st.add_vertex(Vector3(x-x0, h01, y+1-y0))
+			st.add_uv(uv01)
+			st.add_vertex(p01)
 	
 	# We can't rely on automatic normals because they would produce seams at the edges of chunks,
 	# so instead we generate the normals from the actual terrain data
