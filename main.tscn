@@ -1,48 +1,10 @@
 [gd_scene load_steps=6 format=1]
 
 [ext_resource path="res://terrain.gd" type="Script" id=1]
-[ext_resource path="res://icon.png" type="Texture" id=2]
-[ext_resource path="res://debug_camera.gd" type="Script" id=3]
+[ext_resource path="res://debug_camera.gd" type="Script" id=2]
+[ext_resource path="res://grid.gd" type="Script" id=3]
 
-[sub_resource type="FixedMaterial" id=1]
-
-flags/visible = true
-flags/double_sided = false
-flags/invert_faces = false
-flags/unshaded = false
-flags/on_top = false
-flags/lightmap_on_uv2 = true
-flags/colarray_is_srgb = true
-params/blend_mode = 0
-params/depth_draw = 1
-params/line_width = 1.78412e+25
-fixed_flags/use_alpha = false
-fixed_flags/use_color_array = false
-fixed_flags/use_point_size = false
-fixed_flags/discard_alpha = false
-fixed_flags/use_xy_normalmap = false
-params/diffuse = Color( 1, 1, 1, 1 )
-params/specular = Color( 0, 0, 0, 1 )
-params/emission = Color( 0, 0, 0, 1 )
-params/specular_exp = 40
-params/detail_mix = 1.0
-params/normal_depth = 1
-params/shader = 0
-params/shader_param = 0.5
-params/glow = 0
-params/point_size = 1.0
-uv_xform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-textures/diffuse = ExtResource( 2 )
-textures/diffuse_tc = 0
-textures/detail_tc = 0
-textures/specular_tc = 0
-textures/emission_tc = 0
-textures/specular_exp_tc = 0
-textures/glow_tc = 0
-textures/normal_tc = 0
-textures/shade_param_tc = 0
-
-[sub_resource type="Environment" id=2]
+[sub_resource type="Environment" id=1]
 
 ambient_light/enabled = true
 ambient_light/color = Color( 0.0507813, 0.0507813, 0.0507813, 1 )
@@ -86,13 +48,18 @@ bcs/contrast = 1.0
 bcs/saturation = 1.0
 srgb/enabled = false
 
+[sub_resource type="Mesh" id=2]
+
+surfaces/0 = { "alphasort":false, "arrays":[ Vector3Array( 0, 0, 0, 0, 0, 256, 0, 0, 0, 256, 0, 0, 16, 0, 0, 16, 0, 256, 0, 0, 16, 256, 0, 16, 32, 0, 0, 32, 0, 256, 0, 0, 32, 256, 0, 32, 48, 0, 0, 48, 0, 256, 0, 0, 48, 256, 0, 48, 64, 0, 0, 64, 0, 256, 0, 0, 64, 256, 0, 64, 80, 0, 0, 80, 0, 256, 0, 0, 80, 256, 0, 80, 96, 0, 0, 96, 0, 256, 0, 0, 96, 256, 0, 96, 112, 0, 0, 112, 0, 256, 0, 0, 112, 256, 0, 112, 128, 0, 0, 128, 0, 256, 0, 0, 128, 256, 0, 128, 144, 0, 0, 144, 0, 256, 0, 0, 144, 256, 0, 144, 160, 0, 0, 160, 0, 256, 0, 0, 160, 256, 0, 160, 176, 0, 0, 176, 0, 256, 0, 0, 176, 256, 0, 176, 192, 0, 0, 192, 0, 256, 0, 0, 192, 256, 0, 192, 208, 0, 0, 208, 0, 256, 0, 0, 208, 256, 0, 208, 224, 0, 0, 224, 0, 256, 0, 0, 224, 256, 0, 224, 240, 0, 0, 240, 0, 256, 0, 0, 240, 256, 0, 240 ), null, null, ColorArray( 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1 ), null, null, null, null, null ], "morph_arrays":[  ], "primitive":1 }
+custom_aabb/custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
+
 [node name="Node" type="Node"]
 
 [node name="Terrain" type="Node" parent="."]
 
 script/script = ExtResource( 1 )
-terrain_size = 256
-material = SubResource( 1 )
+terrain_size = 32
+material = null
 
 [node name="Camera" type="Camera" parent="."]
 
@@ -108,7 +75,7 @@ visible_layers = 1048575
 environment = null
 h_offset = 0.0
 v_offset = 0.0
-script/script = ExtResource( 3 )
+script/script = ExtResource( 2 )
 sensitivity = 0.4
 min_angle = -90
 max_angle = 90
@@ -137,12 +104,12 @@ geometry/baked_light_tex_id = 0
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 
 _import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-transform/local = Transform( 0.229906, -0.846385, 0.480391, -0.795788, 0.120659, 0.593433, -0.560237, -0.518723, -0.645802, 0, 7.00393, 0 )
+transform/local = Transform( 0.255472, -0.940506, 0.533812, -0.884282, 0.134077, 0.659425, -0.622537, -0.576407, -0.717617, 18.9312, 27.7986, 22.0274 )
 layers = 1
 params/enabled = true
 params/editor_only = false
 params/bake_mode = 0
-params/energy = 0.5
+params/energy = 1.0
 colors/diffuse = Color( 1, 1, 1, 1 )
 colors/specular = Color( 1, 1, 1, 1 )
 shadow/shadow = true
@@ -161,12 +128,12 @@ shadow/zoffset_scale = 2.0
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 
 _import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-environment = SubResource( 2 )
+environment = SubResource( 1 )
 
-[node name="TestCube 2" type="TestCube" parent="."]
+[node name="MeshInstance 2" type="MeshInstance" parent="."]
 
 _import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
-transform/local = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9.01333, 0.859018, 15.2331 )
+transform/local = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21772, 0 )
 layers = 1
 geometry/visible = true
 geometry/material_override = null
@@ -181,5 +148,9 @@ geometry/depth_scale = false
 geometry/visible_in_all_rooms = false
 geometry/use_baked_light = false
 geometry/baked_light_tex_id = 0
+mesh/mesh = SubResource( 2 )
+mesh/skeleton = NodePath("..")
+script/script = ExtResource( 3 )
+step = 16
 
 
