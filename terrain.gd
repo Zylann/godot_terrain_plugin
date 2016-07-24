@@ -11,8 +11,7 @@ class Chunk:
 	var pos = Vector2(0,0)
 
 export(int) var terrain_size = 64 setget set_terrain_size, get_terrain_size
-# TODO Make this dynamic
-export(Material) var material = null
+export(Material) var material = null setget set_material, get_material
 
 var _data = []
 var _normals = []
@@ -51,8 +50,21 @@ func set_terrain_size(new_size):
 			new_size = MAX_TERRAIN_SIZE
 			print("Max size reached, clamped at " + str(MAX_TERRAIN_SIZE) + " for your safety :p")
 		terrain_size = new_size
-		print("Setting terrain_size to " + str(terrain_size))
+		#print("Setting terrain_size to " + str(terrain_size))
 		_on_terrain_size_changed()
+
+
+func get_material():
+	return material
+
+func set_material(new_material):
+	if new_material != material:
+		material = new_material
+		for y in range(0, _chunks.size()):
+			var row = _chunks[y]
+			for x in range(0, row.size()):
+				var chunk = row[x]
+				chunk.mesh_instance.set_material_override(material)
 
 
 func _on_terrain_size_changed():
