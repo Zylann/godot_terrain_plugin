@@ -1,8 +1,10 @@
-[gd_scene load_steps=6 format=1]
+[gd_scene load_steps=8 format=1]
 
 [ext_resource path="res://terrain.gd" type="Script" id=1]
-[ext_resource path="res://debug_camera.gd" type="Script" id=2]
-[ext_resource path="res://grid.gd" type="Script" id=3]
+[ext_resource path="res://terrain_material.tres" type="Material" id=2]
+[ext_resource path="res://debug_camera.gd" type="Script" id=3]
+[ext_resource path="res://grid.gd" type="Script" id=4]
+[ext_resource path="res://sphere.msh" type="Mesh" id=5]
 
 [sub_resource type="Environment" id=1]
 
@@ -59,7 +61,7 @@ custom_aabb/custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
 
 script/script = ExtResource( 1 )
 terrain_size = 32
-material = null
+material = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="."]
 
@@ -75,7 +77,7 @@ visible_layers = 1048575
 environment = null
 h_offset = 0.0
 v_offset = 0.0
-script/script = ExtResource( 2 )
+script/script = ExtResource( 3 )
 sensitivity = 0.4
 min_angle = -90
 max_angle = 90
@@ -130,7 +132,7 @@ shadow/zoffset_scale = 2.0
 _import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 environment = SubResource( 1 )
 
-[node name="MeshInstance 2" type="MeshInstance" parent="."]
+[node name="Grid" type="MeshInstance" parent="."]
 
 _import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 transform/local = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21772, 0 )
@@ -150,7 +152,28 @@ geometry/use_baked_light = false
 geometry/baked_light_tex_id = 0
 mesh/mesh = SubResource( 2 )
 mesh/skeleton = NodePath("..")
-script/script = ExtResource( 3 )
+script/script = ExtResource( 4 )
 step = 16
+
+[node name="TestSphere" type="MeshInstance" parent="."]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5.77462 )
+layers = 1
+geometry/visible = true
+geometry/material_override = ExtResource( 2 )
+geometry/cast_shadow = true
+geometry/receive_shadows = true
+geometry/range_begin = 0.0
+geometry/range_end = 0.0
+geometry/extra_cull_margin = 0.0
+geometry/billboard = false
+geometry/billboard_y = false
+geometry/depth_scale = false
+geometry/visible_in_all_rooms = false
+geometry/use_baked_light = false
+geometry/baked_light_tex_id = 0
+mesh/mesh = ExtResource( 5 )
+mesh/skeleton = NodePath("..")
 
 
