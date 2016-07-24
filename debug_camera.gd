@@ -30,8 +30,8 @@ func _ready():
 func _process(delta):
 	var motor = Vector3(0,0,0)
 	
-	var forward = get_transform().basis * Vector3(0,0,-1)
-	var right = get_transform().basis * Vector3(1,0,0)
+	var forward = -get_transform().basis.z
+	var right = get_transform().basis.x
 	var up = Vector3(0,1,0)
 	
 	if abs(forward.y) < 1.0:
