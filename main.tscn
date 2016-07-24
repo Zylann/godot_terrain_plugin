@@ -60,7 +60,7 @@ custom_aabb/custom_aabb = AABB( 0, 0, 0, 0, 0, 0 )
 [node name="Terrain" type="Node" parent="."]
 
 script/script = ExtResource( 1 )
-terrain_size = 32
+terrain_size = 64
 material = ExtResource( 2 )
 
 [node name="Camera" type="Camera" parent="."]
