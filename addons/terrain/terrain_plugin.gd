@@ -10,7 +10,6 @@ var _pressed = false
 
 
 func _enter_tree():
-	#print("Enter tree")
 	add_custom_type(TARGET_TYPE, "Node", Terrain, preload("icon.png"))
 
 
@@ -19,8 +18,6 @@ func _exit_tree():
 
 
 func paint(camera, mouse_pos, mode):
-	#print("Mouse pos = " + str(mouse_pos))
-	
 	var origin = camera.project_ray_origin(mouse_pos)
 	var dir = camera.project_ray_normal(mouse_pos)
 	
@@ -44,17 +41,22 @@ func forward_spatial_input_event(camera, event):
 	var captured_event = false
 	
 	if event.type == InputEvent.MOUSE_BUTTON:
-		if event.button_index == BUTTON_LEFT:
+		if event.button_index == BUTTON_LEFT or event.button_index == BUTTON_RIGHT:
 			captured_event = true
-			#print("Got it")
 			if event.is_pressed():
 				_pressed = true
 			else:
 				_pressed = false
 	
 	elif _pressed and event.type == InputEvent.MOUSE_MOTION:
-		paint(camera, event.pos, Terrain.PAINT_MODE_ADD)
-		captured_event = true
+		
+		if Input.is_mouse_button_pressed(BUTTON_LEFT):
+			paint(camera, event.pos, Terrain.PAINT_MODE_ADD)
+			captured_event = true
+			
+		elif Input.is_mouse_button_pressed(BUTTON_RIGHT):
+			paint(camera, event.pos, Terrain.PAINT_MODE_SUBTRACT)
+			captured_event = true
 	
 	return captured_event
 
