@@ -4,6 +4,11 @@ extends Node
 const CHUNK_SIZE = 16
 const MAX_TERRAIN_SIZE = 1024
 
+const PAINT_MODE_ADD = 0
+const PAINT_MODE_SUBTRACT = 1
+const PAINT_MODE_SMOOTH = 2
+
+
 const Util = preload("terrain_utils.gd")
 
 class Chunk:
@@ -185,6 +190,23 @@ func _set_chunk_dirty(chunk):
 	_dirty_chunks[chunk] = true
 
 
+func paint_world_pos(wpos, mode=PAINT_MODE_ADD):
+	var cell_pos = world_to_cell_pos(wpos)
+	var delta = 1.0/60.0
+	
+	if mode == PAINT_MODE_ADD:
+		_paint(cell_pos.x, cell_pos.y, 50.0*delta)
+	
+	elif mode == PAINT_MODE_SUBTRACT:
+		_paint(cell_pos.x, cell_pos.y, -50*delta)
+		
+	elif mode == PAINT_MODE_SMOOTH:
+		_smooth(cell_pos.x, cell_pos.y, 4.0*delta)
+	
+	else:
+		error("Unknown paint mode " + str(mode))
+
+
 func _process(delta):
 	var camera = get_viewport().get_camera()
 	
@@ -356,7 +378,7 @@ func raycast(origin, dir):
 	var pos = origin
 	var unit = 1.0
 	var d = 0.0
-	var max_distance = 100.0
+	var max_distance = 800.0
 	while d < max_distance:
 		pos += dir * unit
 		if not position_is_above(pos):
