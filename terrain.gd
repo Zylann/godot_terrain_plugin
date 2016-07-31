@@ -15,10 +15,10 @@ class Chunk:
 	var mesh_instance = null
 	var pos = Vector2(0,0)
 
-export(int) var terrain_size = 0 setget set_terrain_size, get_terrain_size
-export(Material) var material = null setget set_material, get_material
+var terrain_size = 0 setget set_terrain_size, get_terrain_size
+var material = null setget set_material, get_material
 
-export var _data = []
+var _data = []
 var _normals = []
 
 var _brush = null
@@ -30,13 +30,37 @@ var _chunks_x = 0
 var _chunks_y = 0
 var _dirty_chunks = {}
 
+
+func _get_property_list():
+	return [
+		{
+			"name": "terrain_size",
+			"type": TYPE_INT,
+			"usage": PROPERTY_USAGE_DEFAULT
+		},
+		{
+			"name": "material",
+			"type": TYPE_OBJECT,
+			"usage": PROPERTY_USAGE_DEFAULT,
+			"hint": PROPERTY_HINT_RESOURCE_TYPE,
+			"hint_string": "Material"
+		},
+		# We just want to hide the following properties
+		{
+			"name": "_data",
+			"type": TYPE_ARRAY,
+			"usage": PROPERTY_USAGE_STORAGE
+		}
+	]
+
+
 func _ready():
 	
 	# !!!
 	# TODO MEGA WARNINGS OF THE DEATH:
 	# - exporting an array will load it in COW mode!!! this will break everything!!!
 	# - reloading the script makes data LOST FOREVER
-	# UGLY FIX, remove asap when Godot will be fixed
+	# UGLY FIX, remove asap when Godot will be fixed, it severely impacts loading performance on huge terrains
 	_data = Util.clone_grid(_data)
 	
 	_on_terrain_size_changed()
