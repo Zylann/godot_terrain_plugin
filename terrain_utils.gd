@@ -22,6 +22,19 @@ static func create_grid(w, h, v=null):
 		grid[y] = row
 	return grid
 
+# Creates a 2D array that is a copy of another 2D array
+static func clone_grid(other_grid):
+	var grid = []
+	grid.resize(other_grid.size())
+	for y in range(0, grid.size()):
+		var row = []
+		var other_row = other_grid[y]
+		row.resize(other_row.size())
+		grid[y] = row
+		for x in range(0, row.size()):
+			row[x] = other_row[x]
+	return grid
+
 # Resizes a 2D array and allows to set or call functions for each deleted and created cells.
 # This is especially useful if cells contain objects and you don't want to loose existing data.
 static func resize_grid(grid, new_width, new_height, create_func=null, delete_func=null):
@@ -31,7 +44,7 @@ static func resize_grid(grid, new_width, new_height, create_func=null, delete_fu
 	if delete_func != null:
 		assert(typeof(delete_func) == TYPE_OBJECT and delete_func extends FuncRef)
 	var is_create_func = typeof(create_func) == TYPE_OBJECT and create_func extends FuncRef
-
+	
 	# Get old size (supposed to be rectangular!)
 	var old_height = grid.size()
 	var old_width = 0

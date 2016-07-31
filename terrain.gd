@@ -15,10 +15,10 @@ class Chunk:
 	var mesh_instance = null
 	var pos = Vector2(0,0)
 
-export(int) var terrain_size = 64 setget set_terrain_size, get_terrain_size
+export(int) var terrain_size = 0 setget set_terrain_size, get_terrain_size
 export(Material) var material = null setget set_material, get_material
 
-var _data = []
+export var _data = []
 var _normals = []
 
 var _brush = null
@@ -30,8 +30,15 @@ var _chunks_x = 0
 var _chunks_y = 0
 var _dirty_chunks = {}
 
-
 func _ready():
+	
+	# !!!
+	# TODO MEGA WARNINGS OF THE DEATH:
+	# - exporting an array will load it in COW mode!!! this will break everything!!!
+	# - reloading the script makes data LOST FOREVER
+	# UGLY FIX, remove asap when Godot will be fixed
+	_data = Util.clone_grid(_data)
+	
 	_on_terrain_size_changed()
 	_generate_brush(_brush_radius)
 	#generate_terrain()
