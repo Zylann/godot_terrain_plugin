@@ -65,15 +65,7 @@ func _ready():
 	
 	_on_terrain_size_changed()
 	_generate_brush(_brush_radius)
-	#generate_terrain()
-	#if not get_tree().is_editor_hint():
 	set_process(true)
-
-#func _debug_print_actual_size(grid, name):
-#	var actual_width = 0
-#	if grid.size() != 0:
-#		actual_width = grid[0].size()
-#	print("Actual size of " + name + ": " + str(grid.size()) + " x " + str(actual_width))
 
 
 func get_terrain_size():
@@ -238,34 +230,7 @@ func paint_world_pos(wpos, mode=PAINT_MODE_ADD):
 
 
 func _process(delta):
-	_process_legacy_edition(delta)
 	_update_dirty_chunks()
-
-# TODO Will be removed, Terrain must only contain the meshing system
-func _process_legacy_edition(delta):
-	var camera = get_viewport().get_camera()
-	
-	if camera != null:
-		var origin = camera.get_translation()
-		var dir = camera.get_transform().basis * Vector3(0,0,-1)
-		var hit_pos = raycast(origin, dir)
-		if hit_pos != null:
-			get_parent().get_node("TestCube").set_translation(hit_pos)
-			
-			var up = Input.is_mouse_button_pressed(BUTTON_LEFT)
-			var down = Input.is_mouse_button_pressed(BUTTON_RIGHT)
-			
-			if up or down:
-				var cell_pos = world_to_cell_pos(hit_pos)
-				if Input.is_key_pressed(KEY_X):
-					var factor = 4.0*delta
-					_smooth(cell_pos.x, cell_pos.y, factor)
-				else:
-					var factor = 20.0 * delta
-					if down:
-						factor = -factor
-					_paint(cell_pos.x, cell_pos.y, factor)
-	
 
 
 func _update_dirty_chunks():
@@ -420,19 +385,5 @@ func raycast(origin, dir):
 		d += unit
 	return null
 
-
-#func _input(event):
-#	if event.type == InputEvent.MOUSE_BUTTON and event.pressed:
-#		if event.button_index == BUTTON_WHEEL_UP:
-#			_set_brush_radius(_brush_radius+1)
-#		elif event.button_index == BUTTON_WHEEL_DOWN:
-#			_set_brush_radius(_brush_radius-1)
-
-
-func _set_brush_radius(r):
-	if r > 0 and r != _brush_radius:
-		_brush_radius = r
-		_generate_brush(r)
-		print("Change brush radius " + str(r))
 
 
