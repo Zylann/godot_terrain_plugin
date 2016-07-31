@@ -14,6 +14,7 @@ var _paint_mode = Terrain.PAINT_MODE_ADD
 func _enter_tree():
 	add_custom_type(TARGET_TYPE, "Node", Terrain, preload("icon.png"))
 	
+	# TODO This is going to become a mess, move that to another script
 	_mode_selector = MenuButton.new()
 	_mode_selector.set_text("Terrain")
 	var popup = _mode_selector.get_popup()

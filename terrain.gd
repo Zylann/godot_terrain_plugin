@@ -32,7 +32,6 @@ var _dirty_chunks = {}
 
 
 func _ready():
-	set_process_input(true)
 	_on_terrain_size_changed()
 	_generate_brush(_brush_radius)
 	#generate_terrain()
@@ -208,6 +207,11 @@ func paint_world_pos(wpos, mode=PAINT_MODE_ADD):
 
 
 func _process(delta):
+	_process_legacy_edition(delta)
+	_update_dirty_chunks()
+
+# TODO Will be removed, Terrain must only contain the meshing system
+func _process_legacy_edition(delta):
 	var camera = get_viewport().get_camera()
 	
 	if camera != null:
@@ -231,7 +235,6 @@ func _process(delta):
 						factor = -factor
 					_paint(cell_pos.x, cell_pos.y, factor)
 	
-	_update_dirty_chunks()
 
 
 func _update_dirty_chunks():
@@ -387,12 +390,12 @@ func raycast(origin, dir):
 	return null
 
 
-func _input(event):
-	if event.type == InputEvent.MOUSE_BUTTON and event.pressed:
-		if event.button_index == BUTTON_WHEEL_UP:
-			_set_brush_radius(_brush_radius+1)
-		elif event.button_index == BUTTON_WHEEL_DOWN:
-			_set_brush_radius(_brush_radius-1)
+#func _input(event):
+#	if event.type == InputEvent.MOUSE_BUTTON and event.pressed:
+#		if event.button_index == BUTTON_WHEEL_UP:
+#			_set_brush_radius(_brush_radius+1)
+#		elif event.button_index == BUTTON_WHEEL_DOWN:
+#			_set_brush_radius(_brush_radius-1)
 
 
 func _set_brush_radius(r):
