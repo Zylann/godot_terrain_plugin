@@ -1,27 +1,32 @@
 tool
 extends EditorPlugin
 
-const TARGET_TYPE = "Terrain"
 const Terrain = preload("res://terrain.gd")
+const Brush = preload("res://addons/terrain/terrain_brush.gd")
+
+const TARGET_TYPE = "Terrain"
 
 var current_object = null
 
 var _pressed = false
 var _mode_selector = null
-var _paint_mode = Terrain.PAINT_MODE_ADD
+var _brush = null
 
 
 func _enter_tree():
 	add_custom_type(TARGET_TYPE, "Node", Terrain, preload("icon.png"))
 	
+	_brush = Brush.new()
+	_brush.generate(4)
+	
 	# TODO This is going to become a mess, move that to another script
 	_mode_selector = MenuButton.new()
 	_mode_selector.set_text("Terrain")
 	var popup = _mode_selector.get_popup()
-	popup.add_check_item("Add", Terrain.PAINT_MODE_ADD)
-	popup.add_check_item("Subtract", Terrain.PAINT_MODE_SUBTRACT)
-	popup.add_check_item("Smooth", Terrain.PAINT_MODE_SMOOTH)
-	popup.set_item_checked(_paint_mode, true)
+	popup.add_check_item("Add", Brush.MODE_ADD)
+	popup.add_check_item("Subtract", Brush.MODE_SUBTRACT)
+	popup.add_check_item("Smooth", Brush.MODE_SMOOTH)
+	popup.set_item_checked(_brush.get_mode(), true)
 	popup.connect("item_pressed", self, "_on_mode_selector_item_pressed")
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, _mode_selector)
 	_mode_selector.hide()
@@ -43,9 +48,9 @@ func _exit_tree():
 
 func _on_mode_selector_item_pressed(item_id):
 	var popup = _mode_selector.get_popup()
-	popup.set_item_checked(_paint_mode, false)
+	popup.set_item_checked(_brush.get_mode(), false)
 	popup.set_item_checked(item_id, true)
-	_paint_mode = item_id
+	_brush.set_mode(item_id)
 
 
 func _on_selection_changed():
@@ -55,13 +60,13 @@ func _on_selection_changed():
 			stop_edit()
 
 
-func paint(camera, mouse_pos, mode):
+func paint(camera, mouse_pos, mode=-1):
 	var origin = camera.project_ray_origin(mouse_pos)
 	var dir = camera.project_ray_normal(mouse_pos)
 	
 	var hit_pos = current_object.raycast(origin, dir)
 	if hit_pos != null:
-		current_object.paint_world_pos(hit_pos, mode)
+		_brush.paint_world_pos(current_object, hit_pos, mode)
 
 
 func handles(object):
@@ -90,12 +95,12 @@ func forward_spatial_input_event(camera, event):
 	
 	elif _pressed and event.type == InputEvent.MOUSE_MOTION:
 		
-		if _paint_mode == Terrain.PAINT_MODE_ADD and Input.is_mouse_button_pressed(BUTTON_RIGHT):
-			paint(camera, event.pos, Terrain.PAINT_MODE_SUBTRACT)
+		if _brush.get_mode() == Brush.MODE_ADD and Input.is_mouse_button_pressed(BUTTON_RIGHT):
+			paint(camera, event.pos, Brush.MODE_SUBTRACT)
 			captured_event = true
 		
 		elif Input.is_mouse_button_pressed(BUTTON_LEFT):
-			paint(camera, event.pos, _paint_mode)
+			paint(camera, event.pos)
 			captured_event = true
 	
 	return captured_event

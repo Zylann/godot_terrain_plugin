@@ -5,14 +5,16 @@ extends Node
 
 
 const Terrain = preload("res://terrain.gd")
-
+const Brush = preload("res://addons/terrain/terrain_brush.gd")
 
 onready var _camera = get_parent()
 onready var _terrain = get_parent().get_parent().get_node("Terrain")
 onready var _cursor = get_node("TestCube")
+onready var _brush = Brush.new()
 
 
 func _ready():
+	_brush.generate(4)
 	set_process_input(true)
 	set_process(true)
 
@@ -21,9 +23,9 @@ func _input(event):
 	if event.type == InputEvent.MOUSE_BUTTON and event.pressed:
 		# TODO Private function access is temporary!
 		if event.button_index == BUTTON_WHEEL_UP:
-			_terrain._set_brush_radius(_terrain._brush_radius+1)
+			_brush.set_radius(_brush.get_radius()+1)
 		elif event.button_index == BUTTON_WHEEL_DOWN:
-			_terrain._set_brush_radius(_terrain._brush_radius-1)
+			_brush.set_radius(_brush.get_radius()-1)
 
 
 func _process(delta):
@@ -40,10 +42,10 @@ func _process(delta):
 		if up or down:
 			if Input.is_key_pressed(KEY_X):
 				var factor = 4.0*delta
-				_terrain.paint_world_pos(hit_pos, Terrain.PAINT_MODE_SMOOTH)
+				_brush.paint_world_pos(_terrain, hit_pos, Brush.MODE_SMOOTH)
 			else:
 				if down:
-					_terrain.paint_world_pos(hit_pos, Terrain.PAINT_MODE_SUBTRACT)
+					_brush.paint_world_pos(_terrain, hit_pos, Brush.MODE_SUBTRACT)
 				else:
-					_terrain.paint_world_pos(hit_pos, Terrain.PAINT_MODE_ADD)
+					_brush.paint_world_pos(_terrain, hit_pos, Brush.MODE_ADD)
 

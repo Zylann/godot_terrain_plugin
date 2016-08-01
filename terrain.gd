@@ -1,15 +1,11 @@
 tool
 extends Node
 
-const CHUNK_SIZE = 16
-const MAX_TERRAIN_SIZE = 1024
-
-const PAINT_MODE_ADD = 0
-const PAINT_MODE_SUBTRACT = 1
-const PAINT_MODE_SMOOTH = 2
-
 
 const Util = preload("terrain_utils.gd")
+
+const CHUNK_SIZE = 16
+const MAX_TERRAIN_SIZE = 1024
 
 class Chunk:
 	var mesh_instance = null
@@ -20,10 +16,6 @@ var material = null setget set_material, get_material
 
 var _data = []
 var _normals = []
-
-var _brush = null
-var _brush_sum = 0
-var _brush_radius = 6
 
 var _chunks = []
 var _chunks_x = 0
@@ -55,7 +47,6 @@ func _get_property_list():
 
 
 func _ready():
-	
 	# !!!
 	# TODO MEGA WARNINGS OF THE DEATH:
 	# - exporting an array will load it in COW mode!!! this will break everything!!!
@@ -64,7 +55,6 @@ func _ready():
 	_data = Util.clone_grid(_data)
 	
 	_on_terrain_size_changed()
-	_generate_brush(_brush_radius)
 	set_process(true)
 
 
@@ -92,6 +82,10 @@ func set_material(new_material):
 			for x in range(0, row.size()):
 				var chunk = row[x]
 				chunk.mesh_instance.set_material_override(material)
+
+
+func get_data():
+	return _data
 
 
 func _on_terrain_size_changed():
@@ -139,62 +133,7 @@ func _create_chunk_cb(x, y):
 	return chunk
 
 
-func _generate_brush(radius):
-	var size = 2*radius
-	_brush = Util.create_grid(size, size, 0)
-	_brush_sum = 0
-	for y in range(-radius, radius):
-		for x in range(-radius, radius):
-			var d = Vector2(x,y).distance_to(Vector2(0,0)) / float(radius)
-			var v = clamp(1.0 - d*d*d, 0.0, 1.0)
-			_brush[y+radius][x+radius] = v
-			_brush_sum += v
-
-
-func _paint(tx0, ty0, factor=1.0):
-	var brush_radius = _brush.size()/2
-	for by in range(0, _brush.size()):
-		var brush_row = _brush[by]
-		for bx in range(0, brush_row.size()):
-			var brush_value = brush_row[bx]
-			var tx = tx0 + bx - brush_radius
-			var ty = ty0 + by - brush_radius
-			if cell_pos_is_valid(tx, ty):
-				_data[ty][tx] += factor * brush_value
-	
-	_set_area_dirty(tx0, ty0, brush_radius)
-
-
-func _smooth(tx0, ty0, factor=1.0):
-	var brush_radius = _brush.size()/2
-	var value_sum = 0
-	
-	for by in range(0, _brush.size()):
-		var brush_row = _brush[by]
-		for bx in range(0, brush_row.size()):
-			var brush_value = brush_row[bx]
-			var tx = tx0 + bx - brush_radius
-			var ty = ty0 + by - brush_radius
-			if cell_pos_is_valid(tx, ty):
-				var data_value = _data[ty][tx]
-				value_sum += data_value * brush_value
-	
-	var value_mean = value_sum / _brush_sum
-
-	for by in range(0, _brush.size()):
-		var brush_row = _brush[by]
-		for bx in range(0, brush_row.size()):
-			var brush_value = brush_row[bx]
-			var tx = tx0 + bx - brush_radius
-			var ty = ty0 + by - brush_radius
-			if cell_pos_is_valid(tx, ty):
-				var data_value = _data[ty][tx]
-				_data[ty][tx] = lerp(data_value, value_mean, factor * brush_value)
-	
-	_set_area_dirty(tx0, ty0, brush_radius)
-
-
-func _set_area_dirty(tx, ty, radius):
+func set_area_dirty(tx, ty, radius):
 	var cx_min = (tx - radius) / CHUNK_SIZE
 	var cy_min = (ty - radius) / CHUNK_SIZE
 	var cx_max = (tx + radius) / CHUNK_SIZE
@@ -210,23 +149,6 @@ func _set_chunk_dirty_at(cx, cy):
 
 func _set_chunk_dirty(chunk):
 	_dirty_chunks[chunk] = true
-
-
-func paint_world_pos(wpos, mode=PAINT_MODE_ADD):
-	var cell_pos = world_to_cell_pos(wpos)
-	var delta = 1.0/60.0
-	
-	if mode == PAINT_MODE_ADD:
-		_paint(cell_pos.x, cell_pos.y, 50.0*delta)
-	
-	elif mode == PAINT_MODE_SUBTRACT:
-		_paint(cell_pos.x, cell_pos.y, -50*delta)
-		
-	elif mode == PAINT_MODE_SMOOTH:
-		_smooth(cell_pos.x, cell_pos.y, 4.0*delta)
-	
-	else:
-		error("Unknown paint mode " + str(mode))
 
 
 func _process(delta):
@@ -260,11 +182,11 @@ func update_chunk_at(cx, cy):
 	update_chunk(chunk)
 
 func update_chunk(chunk):
-	var mesh = generate_mesh_at(chunk.pos.x * CHUNK_SIZE, chunk.pos.y * CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE)
+	var mesh = _generate_mesh_at(chunk.pos.x * CHUNK_SIZE, chunk.pos.y * CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE)
 	chunk.mesh_instance.set_mesh(mesh)
 
 
-func generate_mesh_at(x0, y0, w, h):
+func _generate_mesh_at(x0, y0, w, h):
 	var st = SurfaceTool.new()
 	
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -272,7 +194,7 @@ func generate_mesh_at(x0, y0, w, h):
 	
 	#print("Updating normals data (" + str(x0) + ", " + str(y0) + ", " + str(w) + ", " + str(h) + ")")
 	#_debug_print_actual_size(_normals, "normals")
-	update_normals_data_at(x0, y0, w, h)
+	_update_normals_data_at(x0, y0, w, h)
 	
 	var max_y = y0 + w
 	var max_x = x0 + h
@@ -358,7 +280,7 @@ func _calculate_normal_at(x, y):
 	
 	return Vector3(left - right, 2.0, fore - back).normalized()
 
-func update_normals_data_at(x0, y0, w, h):
+func _update_normals_data_at(x0, y0, w, h):
 	if x0 + w > terrain_size:
 		w = terrain_size - x0
 	if y0 + h > terrain_size:
@@ -370,7 +292,7 @@ func update_normals_data_at(x0, y0, w, h):
 		for x in range(x0, max_x):
 			row[x] = _calculate_normal_at(x,y)
 
-
+# This is a quick and dirty raycast, but it's enough for edition
 func raycast(origin, dir):
 	if not position_is_above(origin):
 		return null
