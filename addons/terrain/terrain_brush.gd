@@ -1,5 +1,5 @@
 
-const Util = preload("res://terrain_utils.gd")
+const Util = preload("terrain_utils.gd")
 
 const MODE_ADD = 0
 const MODE_SUBTRACT = 1

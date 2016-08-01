@@ -1,8 +1,8 @@
 tool
 extends EditorPlugin
 
-const Terrain = preload("res://terrain.gd")
-const Brush = preload("res://addons/terrain/terrain_brush.gd")
+const Terrain = preload("terrain.gd")
+const Brush = preload("terrain_brush.gd")
 
 const TARGET_TYPE = "Terrain"
 

@@ -4,7 +4,7 @@
 extends Node
 
 
-const Terrain = preload("res://terrain.gd")
+const Terrain = preload("res://addons/terrain/terrain.gd")
 const Brush = preload("res://addons/terrain/terrain_brush.gd")
 
 onready var _camera = get_parent()
