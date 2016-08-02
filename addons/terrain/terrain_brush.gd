@@ -7,13 +7,25 @@ const MODE_SMOOTH = 2
 const MODE_COUNT = 3
 
 var _data = []
-var _radius = 0
+var _radius = 4
 var _sum = 0.0
 var _mode = MODE_ADD
 var _mode_secondary = MODE_SUBTRACT
+var _source_image = null
+
+
+func _init():
+	generate(_radius)
 
 
 func generate(radius):
+	if _source_image == null:
+		generate_procedural(radius)
+	else:
+		generate_from_image(_source_image, radius)
+
+
+func generate_procedural(radius):
 	_radius = radius
 	var size = 2*radius
 	_data = Util.create_grid(size, size, 0)
@@ -26,11 +38,37 @@ func generate(radius):
 			_sum += v
 
 
+func generate_from_image(image, radius=-1):
+	if image.get_width() != image.get_height():
+		print("Brush shape image must be square!")
+		return
+	
+	_source_image = image
+	
+	if radius < 0:
+		radius = _radius
+	else:
+		_radius = radius
+	
+	var size = radius*2
+	if size != image.get_width():
+		image = image.resized(size, size, Image.INTERPOLATE_BILINEAR)
+	
+	_data = Util.create_grid(image.get_width(), image.get_height(), 0)
+	_sum = 0
+	
+	for y in range(0, image.get_height()):
+		for x in range(0, image.get_width()):
+			var color = image.get_pixel(x,y)
+			var h = color.a
+			_data[y][x] = h
+			_sum += h
+
+
 func set_radius(r):
 	if r > 0 and r != _radius:
 		_radius = r
 		_generate_brush(r)
-		print("Change brush radius " + str(r))
 
 
 func set_mode(mode):
