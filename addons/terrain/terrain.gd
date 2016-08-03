@@ -194,7 +194,7 @@ func _generate_mesh_at(x0, y0, w, h):
 	
 	#print("Updating normals data (" + str(x0) + ", " + str(y0) + ", " + str(w) + ", " + str(h) + ")")
 	#_debug_print_actual_size(_normals, "normals")
-	_update_normals_data_at(x0, y0, w, h)
+	_update_normals_data_at(x0, y0, w+1, h+1)
 	
 	var max_y = y0 + w
 	var max_x = x0 + h
