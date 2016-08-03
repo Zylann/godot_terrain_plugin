@@ -3,6 +3,7 @@ extends Control
 
 signal brush_shape_changed
 signal brush_size_changed
+signal brush_opacity_changed
 signal brush_mode_changed
 signal ask_save_to_image
 
@@ -10,6 +11,9 @@ onready var _shape_selector = get_node("HSplitContainer/right/shapes")
 
 onready var _size_line_edit = get_node("HSplitContainer/params/size/LineEdit")
 onready var _size_slider = get_node("HSplitContainer/params/size/slider")
+
+onready var _opacity_line_edit = get_node("HSplitContainer/params/opacity/LineEdit")
+onready var _opacity_slider = get_node("HSplitContainer/params/opacity/slider")
 
 onready var _mode_selector = get_node("HSplitContainer/params/mode_selector")
 
@@ -25,8 +29,12 @@ func _ready():
 		
 		_build_shape_selector()
 		
+		# TODO Make a reusable slider
 		_size_slider.connect("value_changed", self, "_on_size_slider_value_changed")
 		_size_line_edit.connect("text_entered", self, "_on_size_line_edit_entered")
+
+		_opacity_slider.connect("value_changed", self, "_on_opacity_slider_value_changed")
+		_opacity_line_edit.connect("text_entered", self, "_on_opacity_line_edit_entered")
 		
 		_mode_selector.connect("button_selected", self, "_on_mode_selector_button_selected")
 		
@@ -62,6 +70,16 @@ func _on_size_slider_value_changed(value):
 func _on_size_line_edit_entered(text):
 	var size = text.to_int()
 	_size_slider.set_value(size)
+
+
+func _on_opacity_slider_value_changed(value):
+	emit_signal("brush_opacity_changed", value / 100.0)
+	_opacity_line_edit.set_text(str(value))
+
+
+func _on_opacity_line_edit_entered(text):
+	var opacity = text.to_int()
+	_opacity_slider.set_value(opacity)
 
 
 func _on_mode_selector_button_selected(button):

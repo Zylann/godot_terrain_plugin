@@ -186,6 +186,7 @@ func update_chunk(chunk):
 	chunk.mesh_instance.set_mesh(mesh)
 
 
+# This function is the most time-consuming one in this tool.
 func _generate_mesh_at(x0, y0, w, h):
 	var st = SurfaceTool.new()
 	

@@ -8,6 +8,7 @@ const MODE_COUNT = 3
 
 var _data = []
 var _radius = 4
+var _opacity = 1.0
 var _sum = 0.0
 var _mode = MODE_ADD
 var _mode_secondary = MODE_SUBTRACT
@@ -71,6 +72,10 @@ func set_radius(r):
 		_generate_brush(r)
 
 
+func set_opacity(opacity):
+	_opacity = clamp(opacity, 0.0, 2.0)
+
+
 func set_mode(mode):
 	assert(mode >= 0 and mode < MODE_COUNT)
 	_mode = mode
@@ -82,7 +87,7 @@ func get_mode():
 
 func paint_world_pos(terrain, wpos, override_mode=-1):
 	var cell_pos = terrain.world_to_cell_pos(wpos)
-	var delta = 1.0/60.0
+	var delta = _opacity * 1.0/60.0
 	
 	var mode = _mode
 	if override_mode != -1:

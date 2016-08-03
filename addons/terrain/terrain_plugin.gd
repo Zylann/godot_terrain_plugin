@@ -26,6 +26,7 @@ func _enter_tree():
 	_panel.connect("brush_size_changed", self, "_on_brush_size_changed")
 	_panel.connect("brush_mode_changed", self, "_on_brush_mode_changed")
 	_panel.connect("brush_shape_changed", self, "_on_brush_shape_changed")
+	_panel.connect("brush_opacity_changed", self, "_on_brush_opacity_changed")
 	_panel.connect("ask_save_to_image", self, "_on_ask_save_to_image")
 	_panel.hide()
 	
@@ -53,6 +54,10 @@ func _on_selection_changed():
 
 func _on_brush_size_changed(size):
 	_brush.generate(size)
+
+
+func _on_brush_opacity_changed(opacity):
+	_brush.set_opacity(opacity)
 
 
 func _on_brush_mode_changed(mode):
