@@ -99,7 +99,7 @@ focus/ignore_mouse = false
 focus/stop_mouse = true
 size_flags/horizontal = 2
 size_flags/vertical = 0
-margin/left = 48.0
+margin/left = 58.0
 margin/top = 4.0
 margin/right = 204.0
 margin/bottom = 20.0
@@ -115,6 +115,68 @@ ticks_on_borders = false
 focus_mode = 2
 
 [node name="LineEdit" type="LineEdit" parent="HSplitContainer/params/size"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 210.0
+margin/top = -1.0
+margin/right = 268.0
+margin/bottom = 23.0
+placeholder/alpha = 0.6
+focus_mode = 2
+caret/caret_blink = true
+caret/caret_blink_speed = 0.65
+
+[node name="opacity" type="Control" parent="HSplitContainer/params"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 4.0
+margin/top = 55.0
+margin/right = 44.0
+margin/bottom = 95.0
+
+[node name="label" type="Label" parent="HSplitContainer/params/opacity"]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 0
+margin/left = 0.0
+margin/top = 5.0
+margin/right = 40.0
+margin/bottom = 19.0
+text = "Opacity"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="slider" type="HSlider" parent="HSplitContainer/params/opacity"]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 0
+margin/left = 58.0
+margin/top = 4.0
+margin/right = 204.0
+margin/bottom = 20.0
+range/min = 0.0
+range/max = 200.0
+range/step = 1.0
+range/page = 0.0
+range/value = 100.0
+range/exp_edit = false
+range/rounded = true
+tick_count = 0
+ticks_on_borders = false
+focus_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="HSplitContainer/params/opacity"]
 
 focus/ignore_mouse = false
 focus/stop_mouse = true

@@ -11,8 +11,9 @@ class Chunk:
 	var mesh_instance = null
 	var pos = Vector2(0,0)
 
-var terrain_size = 0 setget set_terrain_size, get_terrain_size
-var material = null setget set_material, get_material
+export(int, 0, 1024) var terrain_size = 0 setget set_terrain_size, get_terrain_size
+export(Material) var material = null setget set_material, get_material
+export var smooth_shading = true setget set_smooth_shading
 
 var _data = []
 var _normals = []
@@ -25,18 +26,6 @@ var _dirty_chunks = {}
 
 func _get_property_list():
 	return [
-		{
-			"name": "terrain_size",
-			"type": TYPE_INT,
-			"usage": PROPERTY_USAGE_DEFAULT
-		},
-		{
-			"name": "material",
-			"type": TYPE_OBJECT,
-			"usage": PROPERTY_USAGE_DEFAULT,
-			"hint": PROPERTY_HINT_RESOURCE_TYPE,
-			"hint_string": "Material"
-		},
 		# We just want to hide the following properties
 		{
 			"name": "_data",
@@ -84,6 +73,12 @@ func set_material(new_material):
 				chunk.mesh_instance.set_material_override(material)
 
 
+func set_smooth_shading(smooth):
+	if smooth != smooth_shading:
+		smooth_shading = smooth
+		_force_update_all_chunks()
+
+
 func get_data():
 	return _data
 
@@ -110,7 +105,7 @@ func _on_terrain_size_changed():
 			for x in range(0, last_row.size()):
 				_set_chunk_dirty(last_row[x])
 		
-		_update_dirty_chunks()
+		_update_all_dirty_chunks()
 
 
 func _delete_chunk_cb(chunk):
@@ -152,13 +147,20 @@ func _set_chunk_dirty(chunk):
 
 
 func _process(delta):
-	_update_dirty_chunks()
+	_update_all_dirty_chunks()
 
 
-func _update_dirty_chunks():
+func _update_all_dirty_chunks():
 	for chunk in _dirty_chunks:
 		update_chunk_at(chunk.pos.x, chunk.pos.y)
 	_dirty_chunks.clear()
+
+
+func _force_update_all_chunks():
+	for y in range(0, _chunks.size()):
+		var row = _chunks[y]
+		for x in range(0, row.size()):
+			update_chunk(row[x])
 
 
 func world_to_cell_pos(wpos):
@@ -195,7 +197,8 @@ func _generate_mesh_at(x0, y0, w, h):
 	
 	#print("Updating normals data (" + str(x0) + ", " + str(y0) + ", " + str(w) + ", " + str(h) + ")")
 	#_debug_print_actual_size(_normals, "normals")
-	_update_normals_data_at(x0, y0, w+1, h+1)
+	if smooth_shading:
+		_update_normals_data_at(x0, y0, w+1, h+1)
 	
 	var max_y = y0 + w
 	var max_x = x0 + h
@@ -215,43 +218,71 @@ func _generate_mesh_at(x0, y0, w, h):
 			var p01 = Vector3(x-x0, _data[y+1][x], y+1-y0)
 			var p11 = Vector3(x+1-x0, _data[y+1][x+1], y+1-y0)
 			
-			var n00 = normal_row[x]
-			var n10 = normal_row[x+1]
-			var n01 = _normals[y+1][x]
-			var n11 = _normals[y+1][x+1]
-			
 			var uv00 = Vector2(0,0)
 			var uv10 = Vector2(1,0)
 			var uv11 = Vector2(1,1)
 			var uv01 = Vector2(0,1)
 			
-			st.add_normal(n00)
-			st.add_uv(uv00)
-			st.add_vertex(p00)
+			# TODO This is where optimization becomes a pain.
+			# Find a way to use arrays instead of interleaved data. SurfaceTool is bad at this...
+			# What if we don't want UVs? AAAAAAAAAAAAAAHHH
 			
-			st.add_normal(n10)
-			st.add_uv(uv10)
-			st.add_vertex(p10)
+			if smooth_shading:
+				
+				var n00 = normal_row[x]
+				var n10 = normal_row[x+1]
+				var n01 = _normals[y+1][x]
+				var n11 = _normals[y+1][x+1]
 			
-			st.add_normal(n11)
-			st.add_uv(uv11)
-			st.add_vertex(p11)
-
-			st.add_normal(n00)
-			st.add_uv(uv00)
-			st.add_vertex(p00)
-			
-			st.add_normal(n11)
-			st.add_uv(uv11)
-			st.add_vertex(p11)
-			
-			st.add_normal(n01)
-			st.add_uv(uv01)
-			st.add_vertex(p01)
+				st.add_normal(n00)
+				st.add_uv(uv00)
+				st.add_vertex(p00)
+				
+				st.add_normal(n10)
+				st.add_uv(uv10)
+				st.add_vertex(p10)
+				
+				st.add_normal(n11)
+				st.add_uv(uv11)
+				st.add_vertex(p11)
 	
-	# We can't rely on automatic normals because they would produce seams at the edges of chunks,
+				st.add_normal(n00)
+				st.add_uv(uv00)
+				st.add_vertex(p00)
+				
+				st.add_normal(n11)
+				st.add_uv(uv11)
+				st.add_vertex(p11)
+				
+				st.add_normal(n01)
+				st.add_uv(uv01)
+				st.add_vertex(p01)
+			
+			else:
+				st.add_uv(uv00)
+				st.add_vertex(p00)
+				
+				st.add_uv(uv10)
+				st.add_vertex(p10)
+				
+				st.add_uv(uv11)
+				st.add_vertex(p11)
+	
+				st.add_uv(uv00)
+				st.add_vertex(p00)
+				
+				st.add_uv(uv11)
+				st.add_vertex(p11)
+				
+				st.add_uv(uv01)
+				st.add_vertex(p01)
+	
+	# When smoothing is active, we can't rely on automatic normals,
+	# because they would produce seams at the edges of chunks,
 	# so instead we generate the normals from the actual terrain data
-	#st.generate_normals()
+	
+	if not smooth_shading:
+		st.generate_normals()
 
 	st.index()
 	var mesh = st.commit()
