@@ -4,14 +4,16 @@ extends Control
 signal brush_shape_changed
 signal brush_size_changed
 signal brush_mode_changed
+signal ask_save_to_image
 
-onready var _shape_selector = get_node("HSplitContainer/shapes")
+onready var _shape_selector = get_node("HSplitContainer/right/shapes")
 
 onready var _size_line_edit = get_node("HSplitContainer/params/size/LineEdit")
 onready var _size_slider = get_node("HSplitContainer/params/size/slider")
 
 onready var _mode_selector = get_node("HSplitContainer/params/mode_selector")
 
+onready var _save_to_image_button = get_node("HSplitContainer/right/save_to_image")
 
 var _first_ready = false
 
@@ -27,6 +29,8 @@ func _ready():
 		_size_line_edit.connect("text_entered", self, "_on_size_line_edit_entered")
 		
 		_mode_selector.connect("button_selected", self, "_on_mode_selector_button_selected")
+		
+		_save_to_image_button.connect("pressed", self, "_on_save_to_image_button_clicked")
 
 
 func _build_shape_selector():
@@ -62,6 +66,11 @@ func _on_size_line_edit_entered(text):
 
 func _on_mode_selector_button_selected(button):
 	emit_signal("brush_mode_changed", button)
+
+
+func _on_save_to_image_button_clicked():
+	# TODO Use FileDialog, I have no idea how yet
+	emit_signal("ask_save_to_image", "terrain_test.png")
 
 
 static func get_file_list(dir_path, exts):

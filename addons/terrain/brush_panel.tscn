@@ -68,6 +68,7 @@ button/selected = 0
 
 [node name="size" type="Control" parent="HSplitContainer/params"]
 
+editor/display_folded = true
 focus/ignore_mouse = false
 focus/stop_mouse = true
 size_flags/horizontal = 2
@@ -128,7 +129,7 @@ focus_mode = 2
 caret/caret_blink = true
 caret/caret_blink_speed = 0.65
 
-[node name="shapes" type="ItemList" parent="HSplitContainer"]
+[node name="right" type="Control" parent="HSplitContainer"]
 
 focus/ignore_mouse = false
 focus/stop_mouse = true
@@ -138,5 +139,36 @@ margin/left = 412.0
 margin/top = 0.0
 margin/right = 1024.0
 margin/bottom = 80.0
+
+[node name="shapes" type="ItemList" parent="HSplitContainer/right"]
+
+anchor/right = 1
+anchor/bottom = 1
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 126.0
+margin/bottom = 0.0
+
+[node name="save_to_image" type="Button" parent="HSplitContainer/right"]
+
+anchor/left = 1
+anchor/right = 1
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 119.0
+margin/top = 0.0
+margin/right = 6.0
+margin/bottom = 20.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Save to image..."
+flat = false
 
 

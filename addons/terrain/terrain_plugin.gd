@@ -3,6 +3,7 @@ extends EditorPlugin
 
 const Terrain = preload("terrain.gd")
 const Brush = preload("terrain_brush.gd")
+const Util = preload("terrain_utils.gd")
 
 const TARGET_TYPE = "Terrain"
 
@@ -25,6 +26,7 @@ func _enter_tree():
 	_panel.connect("brush_size_changed", self, "_on_brush_size_changed")
 	_panel.connect("brush_mode_changed", self, "_on_brush_mode_changed")
 	_panel.connect("brush_shape_changed", self, "_on_brush_shape_changed")
+	_panel.connect("ask_save_to_image", self, "_on_ask_save_to_image")
 	_panel.hide()
 	
 	var selection = get_selection()
@@ -60,6 +62,39 @@ func _on_brush_mode_changed(mode):
 func _on_brush_shape_changed(tex):
 	assert(tex extends ImageTexture)
 	_brush.generate_from_image(tex.get_data())
+
+
+func _on_ask_save_to_image(path):
+	if current_object == null:
+		return
+	
+	print("Saving terrain data as image '" + str(path) + "'")
+	
+	var data = current_object.get_data()
+	var image = Image(current_object.terrain_size+1, current_object.terrain_size+1, false, Image.FORMAT_RGBA)
+	
+	var vrange = Util.grid_min_max(data)
+	var vmin = vrange[0]
+	var vmax = vrange[1]
+	var max_amp = vmax - vmin
+	
+	for y in range(data.size()):
+		var row = data[y]
+		for x in range(row.size()):
+			var h = row[x]
+			h = (h - vmin) / max_amp
+			image.put_pixel(x, y, Color(h,h,h))
+	
+	image.save_png(path)
+	
+	var normal_map_image_path = path.basename() + "_normal_map." + path.extension()
+	var ndata = current_object._normals
+	for y in range(0, ndata.size()):
+		var row = ndata[y]
+		for x in range(0, row.size()):
+			var n = row[x] * 0.5 + Vector3(0.5, 0.5, 0.5)
+			image.put_pixel(x, y, Color(n.x, n.y, n.z))
+	image.save_png(normal_map_image_path)
 
 
 func paint(camera, mouse_pos, mode=-1):

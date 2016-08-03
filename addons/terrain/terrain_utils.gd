@@ -103,3 +103,19 @@ static func resize_grid(grid, new_width, new_height, create_func=null, delete_fu
 		assert(grid[y].size() == new_width)
 
 
+static func grid_min_max(grid):
+	if grid.size() == 0 or grid[0].size() == 0:
+		return [0,0]
+	var vmin = grid[0][0]
+	var vmax = vmin
+	for y in range(0, grid.size()):
+		var row = grid[y]
+		for x in range(0, row.size()):
+			var v = row[x]
+			if v > vmax:
+				vmax = v
+			elif v < vmin:
+				vmin = v
+	return [vmin, vmax]
+
+
