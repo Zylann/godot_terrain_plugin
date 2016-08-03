@@ -310,7 +310,7 @@ func _calculate_normal_at(x, y):
 	var fore = get_terrain_value(x,y+1)
 	var back = get_terrain_value(x,y-1)
 	
-	return Vector3(left - right, 2.0, fore - back).normalized()
+	return Vector3(left - right, 2.0, back - fore).normalized()
 
 func _update_normals_data_at(x0, y0, w, h):
 	if x0 + w > terrain_size:
