@@ -7,17 +7,17 @@ signal brush_opacity_changed
 signal brush_mode_changed
 signal ask_save_to_image
 
-onready var _shape_selector = get_node("HSplitContainer/right/shapes")
+onready var _shape_selector = get_node("shapes")
 
-onready var _size_line_edit = get_node("HSplitContainer/params/size/LineEdit")
-onready var _size_slider = get_node("HSplitContainer/params/size/slider")
+onready var _size_line_edit = get_node("params/size/LineEdit")
+onready var _size_slider = get_node("params/size/slider")
 
-onready var _opacity_line_edit = get_node("HSplitContainer/params/opacity/LineEdit")
-onready var _opacity_slider = get_node("HSplitContainer/params/opacity/slider")
+onready var _opacity_line_edit = get_node("params/opacity/LineEdit")
+onready var _opacity_slider = get_node("params/opacity/slider")
 
-onready var _mode_selector = get_node("HSplitContainer/params/mode_selector")
+onready var _mode_selector = get_node("params/mode_selector")
 
-onready var _save_to_image_button = get_node("HSplitContainer/right/save_to_image")
+onready var _save_to_image_button = get_node("save_to_image")
 
 var _first_ready = false
 
