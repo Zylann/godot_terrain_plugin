@@ -69,7 +69,10 @@ func generate_from_image(image, radius=-1):
 func set_radius(r):
 	if r > 0 and r != _radius:
 		_radius = r
-		_generate_brush(r)
+		generate(r)
+
+func get_radius():
+	return _radius
 
 
 func set_opacity(opacity):
