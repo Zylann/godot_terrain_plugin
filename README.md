@@ -16,6 +16,7 @@ Features
 - Smooth or hard-edges rendering
 - Save to image and normal map
 - Terrain data saved inside the scene like Tilemap and Gridmap
+- Edition behaviour works both in editor and game
 
 
 TODO/ideas
@@ -28,9 +29,10 @@ TODO/ideas
 - Save terrain data as a separate resource to unbloat the scene file
 - Decorrelate resolution and size
 - Make Terrain inherit Spatial so it can be moved around
-- Paint meshes on top of the terrain (grass, trees, rocks...)
+- Paint meshes on top of the terrain (grass, trees, rocks...) <-- I want to make a vegetation generator plugin too :p
 - Improve normals (data "pixels" produce lighting artefacts)
 - Texture painting
+- Physics (low-poly mesh collider? Or heightfield collider like PhysX does?)
 - Infinite terrain mode
 
 - Extras: importer for terrains made in DCCs (Blender/3DS etc)
