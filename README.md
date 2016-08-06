@@ -18,14 +18,16 @@ Features
 - Terrain data saved inside the scene like Tilemap and Gridmap
 - Edition behaviour works both in editor and game
 
+- Extras: sample assets in this repo :)
+
 
 TODO/ideas
 -----------
 
 - Undo/redo
-- Level of detail (LOD)
-- Baked mode for faster terrain loading (it is currently rebuilt from data both in editor and game)
 - Meshing is very slow (will this plugin remain pure GDScript?)
+- Level of detail (non-trivial! Requires faster meshing)
+- Baked mode for faster terrain loading (it is currently rebuilt from data both in editor and game)
 - Save terrain data as a separate resource to unbloat the scene file
 - Decorrelate resolution and size
 - Make Terrain inherit Spatial so it can be moved around
@@ -33,6 +35,8 @@ TODO/ideas
 - Improve normals (data "pixels" produce lighting artefacts)
 - Texture painting
 - Physics (low-poly mesh collider? Or heightfield collider like PhysX does?)
+- Make live edition work
+- Mesh simplification (an editor lib would be welcome)
 - Infinite terrain mode
 
 - Extras: importer for terrains made in DCCs (Blender/3DS etc)
