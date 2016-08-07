@@ -13,6 +13,7 @@ var _sum = 0.0
 var _mode = MODE_ADD
 var _mode_secondary = MODE_SUBTRACT
 var _source_image = null
+var _use_undo_redo = false
 
 
 func _init():
@@ -88,6 +89,10 @@ func get_mode():
 	return _mode
 
 
+func set_undo_redo(use_undo_redo):
+	_use_undo_redo = use_undo_redo
+
+
 func paint_world_pos(terrain, wpos, override_mode=-1):
 	var cell_pos = terrain.world_to_cell_pos(wpos)
 	var delta = _opacity * 1.0/60.0
@@ -110,6 +115,8 @@ func paint_world_pos(terrain, wpos, override_mode=-1):
 
 
 func _paint(terrain, tx0, ty0, factor=1.0):
+	terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo)
+	
 	var data = terrain.get_data()
 	var brush_radius = _data.size()/2
 	
@@ -121,11 +128,11 @@ func _paint(terrain, tx0, ty0, factor=1.0):
 			var ty = ty0 + by - brush_radius
 			if terrain.cell_pos_is_valid(tx, ty):
 				data[ty][tx] += factor * brush_value
-	
-	terrain.set_area_dirty(tx0, ty0, _radius)
 
 
 func _smooth(terrain, tx0, ty0, factor=1.0):
+	terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo)
+	
 	var data = terrain.get_data()
 	var value_sum = 0
 	
@@ -150,6 +157,4 @@ func _smooth(terrain, tx0, ty0, factor=1.0):
 			if terrain.cell_pos_is_valid(tx, ty):
 				var data_value = data[ty][tx]
 				data[ty][tx] = lerp(data_value, value_mean, factor * brush_value)
-	
-	terrain.set_area_dirty(tx0, ty0, _radius)
 

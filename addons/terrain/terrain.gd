@@ -22,6 +22,7 @@ var _chunks = []
 var _chunks_x = 0
 var _chunks_y = 0
 var _dirty_chunks = {}
+var _undo_chunks = {}
 
 
 func _get_property_list():
@@ -127,17 +128,66 @@ func _create_chunk_cb(x, y):
 	#update_chunk(chunk)
 	return chunk
 
-
-func set_area_dirty(tx, ty, radius):
+# Call this just before modifying the terrain
+func set_area_dirty(tx, ty, radius, mark_for_undo=false):
 	var cx_min = (tx - radius) / CHUNK_SIZE
 	var cy_min = (ty - radius) / CHUNK_SIZE
 	var cx_max = (tx + radius) / CHUNK_SIZE
 	var cy_max = (ty + radius) / CHUNK_SIZE
 	
-	for y in range(cy_min, cy_max+1):
-		for x in range(cx_min, cx_max+1):
-			if x >= 0 and y >= 0 and x < _chunks_x and y < _chunks_y:
-				_set_chunk_dirty_at(x, y)
+	for cy in range(cy_min, cy_max+1):
+		for cx in range(cx_min, cx_max+1):
+			if cx >= 0 and cy >= 0 and cx < _chunks_x and cy < _chunks_y:
+				_set_chunk_dirty_at(cx, cy)
+				if mark_for_undo:
+					var chunk = _chunks[cy][cx]
+					if not _undo_chunks.has(chunk):
+						var data = extract_chunk_data(cx, cy)
+						_undo_chunks[chunk] = data
+
+
+func extract_chunk_data(cx, cy):
+	var x0 = cx * CHUNK_SIZE
+	var y0 = cy * CHUNK_SIZE
+	var cell_data = Util.grid_extract_area(_data, x0, y0, CHUNK_SIZE, CHUNK_SIZE)
+	var d = {
+		"cx": cx,
+		"cy": cy,
+		"data": cell_data
+	}
+	return d
+
+
+func apply_chunks_data(chunks_data):
+	for cdata in chunks_data:
+		_set_chunk_dirty_at(cdata.cx, cdata.cy)
+		var x0 = cdata.cx * CHUNK_SIZE
+		var y0 = cdata.cy * CHUNK_SIZE
+		Util.grid_paste(cdata.data, _data, x0, y0)
+
+# Get this data just after finishing an edit action
+func pop_undo_redo_data():
+	var undo_data = []
+	var redo_data = []
+	
+	for k in _undo_chunks:
+		
+		var undo = _undo_chunks[k]
+		undo_data.append(undo)
+		
+		var redo = extract_chunk_data(undo.cx, undo.cy)
+		redo_data.append(redo)
+		
+		# Debug check
+		#assert(not Util.grid_equals(undo.data, redo.data))
+		
+	_undo_chunks = {}
+	
+	return {
+		undo = undo_data,
+		redo = redo_data
+	}
+
 
 func _set_chunk_dirty_at(cx, cy):
 	_set_chunk_dirty(_chunks[cy][cx])

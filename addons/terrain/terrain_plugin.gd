@@ -11,7 +11,7 @@ var current_object = null
 
 var _pressed = false
 var _brush = null
-
+var _disable_undo_callback = false
 var _panel = null
 
 
@@ -19,6 +19,7 @@ func _enter_tree():
 	add_custom_type(TARGET_TYPE, "Node", Terrain, preload("icon.png"))
 	
 	_brush = Brush.new()
+	_brush.set_undo_redo(true)
 	
 	# TODO Initial brush state doesn't match the GUI
 	_panel = preload("brush_panel.tscn").instance()
@@ -134,6 +135,16 @@ func forward_spatial_input_event(camera, event):
 				_pressed = true
 			else:
 				_pressed = false
+				
+				var data = current_object.pop_undo_redo_data()
+				var ur = get_undo_redo()
+				ur.create_action("Paint terrain")
+				ur.add_undo_method(self, "_undo_paint", current_object, data.undo)
+				ur.add_do_method(self, "_redo_paint", current_object, data.redo)
+				# Callback is disabled because data is too huge to be executed a second time
+				_disable_undo_callback = true
+				ur.commit_action()
+				_disable_undo_callback = false
 	
 	elif _pressed and event.type == InputEvent.MOUSE_MOTION:
 		
@@ -148,4 +159,11 @@ func forward_spatial_input_event(camera, event):
 	return captured_event
 
 
+func _undo_paint(terrain, data):
+	if _disable_undo_callback == false:
+		terrain.apply_chunks_data(data)
+
+func _redo_paint(terrain, data):
+	if _disable_undo_callback == false:
+		terrain.apply_chunks_data(data)
 

@@ -1,3 +1,4 @@
+tool
 
 # Performs a positive integer division rounded to upper (4/2 = 2, 5/3 = 2)
 static func up_div(a, b):
@@ -117,5 +118,39 @@ static func grid_min_max(grid):
 			elif v < vmin:
 				vmin = v
 	return [vmin, vmax]
+
+
+static func grid_extract_area(src_grid, x0, y0, w, h):
+	var dst = create_grid(w, h)
+	for y in range(0, h):
+		var dst_row = dst[y]
+		var src_row = src_grid[y0+y]
+		for x in range(0, w):
+			dst_row[x] = src_row[x0+x]
+	return dst
+
+
+static func grid_paste(src_grid, dst_grid, x0, y0):
+	for y in range(0, src_grid.size()):
+		var src_row = src_grid[y]
+		var dst_row = dst_grid[y0+y]
+		for x in range(0, src_row.size()):
+			dst_row[x0+x] = src_row[x]
+
+
+static func grid_equals(a, b):
+	if a.size() != b.size():
+		return false
+	for y in range(0, a.size()):
+		var a_row = a[y]
+		var b_row = b[y]
+		if a_row.size() != b_row.size():
+			return false
+		for x in range(0, b_row.size()):
+			if a_row[x] != b_row[x]:
+				return false
+	return true
+
+
 
 
