@@ -17,6 +17,7 @@ Features
 - Save to image and normal map
 - Terrain data saved inside the scene like Tilemap and Gridmap
 - Edition behaviour works both in editor and game
+- Undo/redo
 
 - Extras: sample assets in this repo :)
 
@@ -24,7 +25,6 @@ Features
 TODO/ideas
 -----------
 
-- Undo/redo
 - Meshing is very slow (will this plugin remain pure GDScript?)
 - Level of detail (non-trivial! Requires faster meshing)
 - Baked mode for faster terrain loading (it is currently rebuilt from data both in editor and game)
