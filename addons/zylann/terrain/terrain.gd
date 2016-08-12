@@ -52,7 +52,7 @@ func get_terrain_size():
 	return terrain_size
 
 func set_terrain_size(new_size):
-	if new_size != terrain_size and new_size > 0:
+	if new_size != terrain_size:
 		if new_size > MAX_TERRAIN_SIZE:
 			new_size = MAX_TERRAIN_SIZE
 			print("Max size reached, clamped at " + str(MAX_TERRAIN_SIZE) + " for your safety :p")
