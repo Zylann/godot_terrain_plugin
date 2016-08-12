@@ -149,7 +149,7 @@ func set_area_dirty(tx, ty, radius, mark_for_undo=false):
 func extract_chunk_data(cx, cy):
 	var x0 = cx * CHUNK_SIZE
 	var y0 = cy * CHUNK_SIZE
-	var cell_data = Util.grid_extract_area(_data, x0, y0, CHUNK_SIZE, CHUNK_SIZE)
+	var cell_data = Util.grid_extract_area_safe_crop(_data, x0, y0, CHUNK_SIZE, CHUNK_SIZE)
 	var d = {
 		"cx": cx,
 		"cy": cy,

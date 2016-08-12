@@ -1,3 +1,5 @@
+
+# Note: `tool` is optional but without it there are no error reporting in the editor
 tool
 
 # Performs a positive integer division rounded to upper (4/2 = 2, 5/3 = 2)
@@ -103,7 +105,7 @@ static func resize_grid(grid, new_width, new_height, create_func=null, delete_fu
 	for y in range(0, grid.size()):
 		assert(grid[y].size() == new_width)
 
-
+# Retrieves the minimum and maximum values from a grid
 static func grid_min_max(grid):
 	if grid.size() == 0 or grid[0].size() == 0:
 		return [0,0]
@@ -119,7 +121,7 @@ static func grid_min_max(grid):
 				vmin = v
 	return [vmin, vmax]
 
-
+# Copies a sub-region of a grid as a new grid. No boundary check!
 static func grid_extract_area(src_grid, x0, y0, w, h):
 	var dst = create_grid(w, h)
 	for y in range(0, h):
@@ -129,7 +131,33 @@ static func grid_extract_area(src_grid, x0, y0, w, h):
 			dst_row[x] = src_row[x0+x]
 	return dst
 
+# Extracts data and crops the result if the requested rect crosses the bounds
+static func grid_extract_area_safe_crop(src_grid, x0, y0, w, h):
+	# Return empty is completely out of bounds
+	var gw = src_grid.size()
+	if gw == 0:
+		return []
+	var gh = src_grid[0].size()
+	if x0 >= gw or y0 >= gh:
+		return []
+	
+	# Crop min pos
+	if x0 < 0:
+		w += x0
+		x0 = 0
+	if y0 < 0:
+		h += y0
+		y0 = 0
+	
+	# Crop max pos
+	if x0+w >= gw:
+		w = gw-x0
+	if y0+h >= gh:
+		h = gh-y0
 
+	return grid_extract_area(src_grid, x0, y0, w, h)
+
+# Sets values from a grid inside another grid. No boundary check!
 static func grid_paste(src_grid, dst_grid, x0, y0):
 	for y in range(0, src_grid.size()):
 		var src_row = src_grid[y]
@@ -137,7 +165,7 @@ static func grid_paste(src_grid, dst_grid, x0, y0):
 		for x in range(0, src_row.size()):
 			dst_row[x0+x] = src_row[x]
 
-
+# Tests if two grids are the same size and contain the same values
 static func grid_equals(a, b):
 	if a.size() != b.size():
 		return false
