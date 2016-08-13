@@ -150,6 +150,12 @@ func _create_chunk_cb(x, y):
 		chunk.mesh_instance.set_material_override(material)
 	chunk.pos = Vector2(x,y)
 	add_child(chunk.mesh_instance)
+	
+	# This makes the chunks visible in editor, however they would be saved,
+	# which would be much less memory-efficient than keeping just the heightfield.
+	#if get_tree().is_editor_hint():
+	#	chunk.mesh_instance.set_owner(get_tree().get_edited_scene_root())
+	
 	_set_chunk_dirty(chunk)
 	#update_chunk(chunk)
 	return chunk
