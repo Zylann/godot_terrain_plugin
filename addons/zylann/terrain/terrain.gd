@@ -79,12 +79,16 @@ func set_smooth_shading(smooth):
 		smooth_shading = smooth
 		_force_update_all_chunks()
 
-
+# Direct data access for better performance.
+# If you want to modify the data through this, don't forget to set the area as dirty
 func get_data():
 	return _data
 
 
 func _on_terrain_size_changed():
+	var prev_chunks_x = _chunks_x
+	var prev_chunks_y = _chunks_y
+	
 	_chunks_x = Util.up_div(terrain_size, CHUNK_SIZE)
 	_chunks_y = Util.up_div(terrain_size, CHUNK_SIZE)
 	
@@ -98,6 +102,11 @@ func _on_terrain_size_changed():
 			if key.mesh_instance == null:
 				_dirty_chunks.erase(key)
 		
+		# The following update code is here to handle the case where terrain size
+		# is not a multiple of chunk size. In that case, not-fully-filled edge chunks may be filled
+		# and must be updated.
+		
+		# Set chunks dirty on the new edge of the terrain
 		for y in range(0, _chunks.size()-1):
 			var row = _chunks[y]
 			_set_chunk_dirty(row[row.size()-1])
@@ -105,6 +114,16 @@ func _on_terrain_size_changed():
 			var last_row = _chunks[_chunks.size()-1]
 			for x in range(0, last_row.size()):
 				_set_chunk_dirty(last_row[x])
+		
+		# Set chunks dirty on the previous edge
+		if _chunks_x - prev_chunks_x > 0:
+			for y in range(0, prev_chunks_x-1):
+				var row = _chunks[y]
+				_set_chunk_dirty(row[prev_chunks_x-1])
+		if _chunks_y - prev_chunks_y > 0:
+			var prev_last_row = _chunks[prev_chunks_y-1]
+			for x in range(0, prev_last_row.size()):
+				_set_chunk_dirty(prev_last_row[x])
 		
 		_update_all_dirty_chunks()
 
@@ -124,7 +143,7 @@ func _create_chunk_cb(x, y):
 		chunk.mesh_instance.set_material_override(material)
 	chunk.pos = Vector2(x,y)
 	add_child(chunk.mesh_instance)
-	_dirty_chunks[chunk] = true
+	_set_chunk_dirty(chunk)
 	#update_chunk(chunk)
 	return chunk
 
