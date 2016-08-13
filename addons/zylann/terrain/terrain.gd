@@ -14,6 +14,7 @@ class Chunk:
 export(int, 0, 1024) var terrain_size = 0 setget set_terrain_size, get_terrain_size
 export(Material) var material = null setget set_material, get_material
 export var smooth_shading = true setget set_smooth_shading
+export var quad_adaptation = false setget set_quad_adaptation
 
 var _data = []
 var _normals = []
@@ -77,6 +78,12 @@ func set_material(new_material):
 func set_smooth_shading(smooth):
 	if smooth != smooth_shading:
 		smooth_shading = smooth
+		_force_update_all_chunks()
+
+
+func set_quad_adaptation(enable):
+	if enable != quad_adaptation:
+		quad_adaptation = enable
 		_force_update_all_chunks()
 
 # Direct data access for better performance.
@@ -297,6 +304,9 @@ func _generate_mesh_at(x0, y0, w, h):
 			# TODO This is where optimization becomes a pain.
 			# Find a way to use arrays instead of interleaved data. SurfaceTool is bad at this...
 			# What if we don't want UVs? AAAAAAAAAAAAAAHHH
+			# See? In C++, you do a lookup table. In GDScript, you don't, because it's TOO DAMN SLOW :D
+		
+			var reverse_quad = quad_adaptation and abs(p00.y - p11.y) > abs(p10.y - p01.y)
 			
 			if smooth_shading:
 				
@@ -304,54 +314,111 @@ func _generate_mesh_at(x0, y0, w, h):
 				var n10 = normal_row[x+1]
 				var n01 = _normals[y+1][x]
 				var n11 = _normals[y+1][x+1]
-			
-				st.add_normal(n00)
-				st.add_uv(uv00)
-				st.add_vertex(p00)
 				
-				st.add_normal(n10)
-				st.add_uv(uv10)
-				st.add_vertex(p10)
-				
-				st.add_normal(n11)
-				st.add_uv(uv11)
-				st.add_vertex(p11)
-	
-				st.add_normal(n00)
-				st.add_uv(uv00)
-				st.add_vertex(p00)
-				
-				st.add_normal(n11)
-				st.add_uv(uv11)
-				st.add_vertex(p11)
-				
-				st.add_normal(n01)
-				st.add_uv(uv01)
-				st.add_vertex(p01)
+				if reverse_quad:
+					# 01---11
+					#  |\  |
+					#  | \ |
+					#  |  \|
+					# 00---10
+					
+					st.add_normal(n00)
+					st.add_uv(uv00)
+					st.add_vertex(p00)
+					
+					st.add_normal(n10)
+					st.add_uv(uv10)
+					st.add_vertex(p10)
+					
+					st.add_normal(n01)
+					st.add_uv(uv01)
+					st.add_vertex(p01)
+		
+					st.add_normal(n10)
+					st.add_uv(uv10)
+					st.add_vertex(p10)
+					
+					st.add_normal(n11)
+					st.add_uv(uv11)
+					st.add_vertex(p11)
+					
+					st.add_normal(n01)
+					st.add_uv(uv01)
+					st.add_vertex(p01)
+					
+				else:
+					# 01---11
+					#  |  /|
+					#  | / |
+					#  |/  |
+					# 00---10
+					
+					st.add_normal(n00)
+					st.add_uv(uv00)
+					st.add_vertex(p00)
+					
+					st.add_normal(n10)
+					st.add_uv(uv10)
+					st.add_vertex(p10)
+					
+					st.add_normal(n11)
+					st.add_uv(uv11)
+					st.add_vertex(p11)
+		
+					st.add_normal(n00)
+					st.add_uv(uv00)
+					st.add_vertex(p00)
+					
+					st.add_normal(n11)
+					st.add_uv(uv11)
+					st.add_vertex(p11)
+					
+					st.add_normal(n01)
+					st.add_uv(uv01)
+					st.add_vertex(p01)
 			
 			else:
-				st.add_uv(uv00)
-				st.add_vertex(p00)
+				if reverse_quad:
+					st.add_uv(uv00)
+					st.add_vertex(p00)
+					
+					st.add_uv(uv10)
+					st.add_vertex(p10)
+					
+					st.add_uv(uv01)
+					st.add_vertex(p01)
+		
+					st.add_uv(uv10)
+					st.add_vertex(p10)
+					
+					st.add_uv(uv11)
+					st.add_vertex(p11)
+					
+					st.add_uv(uv01)
+					st.add_vertex(p01)
 				
-				st.add_uv(uv10)
-				st.add_vertex(p10)
-				
-				st.add_uv(uv11)
-				st.add_vertex(p11)
-	
-				st.add_uv(uv00)
-				st.add_vertex(p00)
-				
-				st.add_uv(uv11)
-				st.add_vertex(p11)
-				
-				st.add_uv(uv01)
-				st.add_vertex(p01)
-	
+				else:
+					st.add_uv(uv00)
+					st.add_vertex(p00)
+					
+					st.add_uv(uv10)
+					st.add_vertex(p10)
+					
+					st.add_uv(uv11)
+					st.add_vertex(p11)
+		
+					st.add_uv(uv00)
+					st.add_vertex(p00)
+					
+					st.add_uv(uv11)
+					st.add_vertex(p11)
+					
+					st.add_uv(uv01)
+					st.add_vertex(p01)
+					
 	# When smoothing is active, we can't rely on automatic normals,
 	# because they would produce seams at the edges of chunks,
 	# so instead we generate the normals from the actual terrain data
-	
 	if not smooth_shading:
 		st.generate_normals()
 

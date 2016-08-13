@@ -18,6 +18,7 @@ Features
 - Terrain data saved inside the scene like Tilemap and Gridmap
 - Edition behaviour works both in editor and game
 - Undo/redo
+- Experimental: quad rotation to improve shading in some cases
 
 - Extras: sample assets in this repo :)
 
