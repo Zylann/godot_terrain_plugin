@@ -277,6 +277,8 @@ func _generate_mesh_at(x0, y0, w, h):
 	if max_x >= terrain_size:
 		max_x = terrain_size
 	
+	var uv_scale = Vector2(1.0/terrain_size, 1.0/terrain_size)
+	
 	for y in range(y0, max_y):
 		var row = _data[y]
 		var normal_row = _normals[y]
@@ -287,10 +289,10 @@ func _generate_mesh_at(x0, y0, w, h):
 			var p01 = Vector3(x-x0, _data[y+1][x], y+1-y0)
 			var p11 = Vector3(x+1-x0, _data[y+1][x+1], y+1-y0)
 			
-			var uv00 = Vector2(0,0)
-			var uv10 = Vector2(1,0)
-			var uv11 = Vector2(1,1)
-			var uv01 = Vector2(0,1)
+			var uv00 = Vector2(x, y) * uv_scale
+			var uv10 = Vector2(x+1, y) * uv_scale
+			var uv11 = Vector2(x+1, y+1) * uv_scale
+			var uv01 = Vector2(x, y+1) * uv_scale
 			
 			# TODO This is where optimization becomes a pain.
 			# Find a way to use arrays instead of interleaved data. SurfaceTool is bad at this...
