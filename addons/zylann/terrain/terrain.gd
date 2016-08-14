@@ -1,5 +1,5 @@
 tool
-extends Node
+extends Spatial
 
 
 const Util = preload("terrain_utils.gd")
