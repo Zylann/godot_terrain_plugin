@@ -16,7 +16,7 @@ var _panel = null
 
 
 func _enter_tree():
-	add_custom_type(TARGET_TYPE, "Node", Terrain, preload("icon.png"))
+	add_custom_type(TARGET_TYPE, "Spatial", Terrain, preload("icon.png"))
 	
 	_brush = Brush.new()
 	_brush.set_undo_redo(true)
