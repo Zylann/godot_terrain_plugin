@@ -9,12 +9,14 @@ const MAX_TERRAIN_SIZE = 1024
 
 class Chunk:
 	var mesh_instance = null
+	var body = null
 	var pos = Vector2(0,0)
 
 export(int, 0, 1024) var terrain_size = 0 setget set_terrain_size, get_terrain_size
 export(Material) var material = null setget set_material, get_material
 export var smooth_shading = true setget set_smooth_shading
 export var quad_adaptation = false setget set_quad_adaptation
+export var generate_colliders = false setget set_generate_colliders
 
 var _data = []
 var _normals = []
@@ -482,6 +484,29 @@ func raycast(origin, dir):
 			return pos - dir * unit
 		d += unit
 	return null
+
+
+func set_generate_colliders(gen_colliders):
+	if generate_colliders != gen_colliders:
+		generate_colliders = gen_colliders
+		_on_generate_colliders_changed()
+
+
+func _on_generate_colliders_changed():
+	if not is_inside_tree():
+		return
+	
+	for cy in range(0, _chunks.size()):
+		var row = _chunks[cy]
+		for cx in range(0, row.size()):
+			var chunk = row[cx]
+			if generate_colliders:
+				if chunk.body == null:
+					# TODO
+					pass
+			else:
+				if chunk.body != null:
+					chunk.body.queue_free()
 
 
 
