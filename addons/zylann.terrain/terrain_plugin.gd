@@ -30,27 +30,13 @@ func _enter_tree():
 	_panel.connect("brush_opacity_changed", self, "_on_brush_opacity_changed")
 	_panel.connect("ask_save_to_image", self, "_on_ask_save_to_image")
 	_panel.hide()
-	
-	var selection = get_selection()
-	selection.connect("selection_changed", self, "_on_selection_changed")
-	_on_selection_changed()
 
 
 func _exit_tree():
-	var selection = get_selection()
-	selection.disconnect("selection_changed", self, "_on_selection_changed")
-	
 	_panel.free()
 	_panel = null
 	
 	remove_custom_type(TARGET_TYPE)
-
-
-func _on_selection_changed():
-	if current_object != null:
-		var selected_nodes = get_selection().get_selected_nodes()
-		if selected_nodes.size() != 1 or not handles(selected_nodes[0]):
-			stop_edit()
 
 
 func _on_brush_size_changed(size):
@@ -118,11 +104,13 @@ func handles(object):
 
 func edit(object):
 	current_object = object
-	_panel.show()
 
-func stop_edit():
-	current_object = null
-	_panel.hide()
+
+func make_visible(visible):
+	if visible:
+		_panel.show()
+	else:
+		_panel.hide()
 
 
 func forward_spatial_input_event(camera, event):
