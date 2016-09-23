@@ -12,7 +12,7 @@ class Chunk:
 	var body = null
 	var pos = Vector2(0,0)
 
-export(int, 0, 1024) var terrain_size = 0 setget set_terrain_size, get_terrain_size
+export(int, 0, 1024) var terrain_size = 128 setget set_terrain_size, get_terrain_size
 export(Material) var material = null setget set_material, get_material
 export var smooth_shading = true setget set_smooth_shading
 export var quad_adaptation = false setget set_quad_adaptation
