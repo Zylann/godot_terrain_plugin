@@ -28,6 +28,7 @@ func _enter_tree():
 	_panel.connect("brush_mode_changed", self, "_on_brush_mode_changed")
 	_panel.connect("brush_shape_changed", self, "_on_brush_shape_changed")
 	_panel.connect("brush_opacity_changed", self, "_on_brush_opacity_changed")
+	_panel.connect("brush_height_changed", self, "_on_brush_height_changed")
 	_panel.connect("ask_save_to_image", self, "_on_ask_save_to_image")
 	_panel.hide()
 
@@ -54,6 +55,11 @@ func _on_brush_mode_changed(mode):
 func _on_brush_shape_changed(tex):
 	assert(tex extends ImageTexture)
 	_brush.generate_from_image(tex.get_data())
+
+
+func _on_brush_height_changed(height):
+	print("Three " + str(height))
+	_brush.set_flatten_height(height)
 
 
 func _on_ask_save_to_image(path):

@@ -1,10 +1,13 @@
 tool
 extends Control
 
+const Brush = preload("terrain_brush.gd")
+
 signal brush_shape_changed
 signal brush_size_changed
 signal brush_opacity_changed
 signal brush_mode_changed
+signal brush_height_changed
 signal ask_save_to_image
 
 onready var _shape_selector = get_node("shapes")
@@ -15,6 +18,8 @@ onready var _size_slider = get_node("params/size/slider")
 onready var _opacity_line_edit = get_node("params/opacity/LineEdit")
 onready var _opacity_slider = get_node("params/opacity/slider")
 
+onready var _height_line_edit = get_node("params/height/LineEdit")
+
 onready var _mode_selector = get_node("params/mode_selector")
 
 onready var _save_to_image_button = get_node("save_to_image")
@@ -22,19 +27,20 @@ onready var _save_to_image_button = get_node("save_to_image")
 var _first_ready = false
 
 func _ready():
-	pass
 	# TODO !!! HOTFIX: Godot calls _ready() twice in scenes instanced in the editor!
 	if not _first_ready:
 		_first_ready = true
 		
 		_build_shape_selector()
 		
-		# TODO Make a reusable slider
+		# TODO Make a reusable slider using property funcrefs on the brush object
 		_size_slider.connect("value_changed", self, "_on_size_slider_value_changed")
 		_size_line_edit.connect("text_entered", self, "_on_size_line_edit_entered")
-
+		
 		_opacity_slider.connect("value_changed", self, "_on_opacity_slider_value_changed")
 		_opacity_line_edit.connect("text_entered", self, "_on_opacity_line_edit_entered")
+		
+		_height_line_edit.connect("text_entered", self, "_on_height_line_edit_entered")
 		
 		_mode_selector.connect("button_selected", self, "_on_mode_selector_button_selected")
 		
@@ -82,8 +88,14 @@ func _on_opacity_line_edit_entered(text):
 	_opacity_slider.set_value(opacity)
 
 
+func _on_height_line_edit_entered(text):
+	var height = text.to_int()
+	emit_signal("brush_height_changed", height)
+
+
 func _on_mode_selector_button_selected(button):
 	emit_signal("brush_mode_changed", button)
+	_height_line_edit.set_editable(button == Brush.MODE_FLATTEN)
 
 
 func _on_save_to_image_button_clicked():

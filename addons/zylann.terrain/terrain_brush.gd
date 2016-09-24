@@ -4,16 +4,19 @@ const Util = preload("terrain_utils.gd")
 const MODE_ADD = 0
 const MODE_SUBTRACT = 1
 const MODE_SMOOTH = 2
-const MODE_COUNT = 3
+const MODE_FLATTEN = 3
+const MODE_COUNT = 4
+
 
 var _data = []
 var _radius = 4
-var _opacity = 1.0
+var _opacity = 1.0 # TODO Should be renamed "hardness"
 var _sum = 0.0
 var _mode = MODE_ADD
 var _mode_secondary = MODE_SUBTRACT
 var _source_image = null
 var _use_undo_redo = false
+var _flatten_height = 0.0
 
 
 func _init():
@@ -84,9 +87,15 @@ func set_mode(mode):
 	assert(mode >= 0 and mode < MODE_COUNT)
 	_mode = mode
 
-
 func get_mode():
 	return _mode
+
+
+func set_flatten_height(h):
+	_flatten_height = h
+
+func get_flatten_height():
+	return _flatten_height
 
 
 func set_undo_redo(use_undo_redo):
@@ -110,15 +119,21 @@ func paint_world_pos(terrain, wpos, override_mode=-1):
 	elif mode == MODE_SMOOTH:
 		_smooth(terrain, cell_pos.x, cell_pos.y, 4.0*delta)
 	
+	elif mode == MODE_FLATTEN:
+		_flatten(terrain, cell_pos.x, cell_pos.y, _flatten_height)
+	
 	else:
 		error("Unknown paint mode " + str(mode))
 
 
-func _paint(terrain, tx0, ty0, factor=1.0):
-	terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo)
+func _foreach_xy(terrain, tx0, ty0, operator, modifier=true):
+	if modifier:
+		terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo)
 	
 	var data = terrain.get_data()
 	var brush_radius = _data.size()/2
+	
+	operator.dst = data
 	
 	for by in range(0, _data.size()):
 		var brush_row = _data[by]
@@ -126,35 +141,52 @@ func _paint(terrain, tx0, ty0, factor=1.0):
 			var brush_value = brush_row[bx]
 			var tx = tx0 + bx - brush_radius
 			var ty = ty0 + by - brush_radius
+			# TODO We could get rid if this `if` by calculating proper bounds beforehands
 			if terrain.cell_pos_is_valid(tx, ty):
-				data[ty][tx] += factor * brush_value
+				operator.exec(tx, ty, brush_value)
+
+# TODO Update this part when Godot will support lambdas
+
+class Operator:
+	var dst = null
+	var opacity = 1.0
+
+class AddOperator extends Operator:
+	var factor = 1.0
+	func exec(x, y, value):
+		dst[y][x] = dst[y][x] + factor * value
+
+class LerpOperator extends Operator:
+	var height = 0.0
+	func exec(x, y, value):
+		dst[y][x] = lerp(dst[y][x], height, value * opacity)
+
+class SumOperator extends Operator:
+	var sum = 0.0
+	func exec(x, y, value):
+		sum += dst[y][x] * value
+
+
+func _paint(terrain, tx0, ty0, factor=1.0):
+	var op = AddOperator.new()
+	op.factor = factor
+	_foreach_xy(terrain, tx0, ty0, op)
+
+
+func _flatten(terrain, tx0, ty0, height):
+	var op = LerpOperator.new()
+	op.height = height
+	op.opacity = clamp(_opacity, 0.0, 1.0)
+	_foreach_xy(terrain, tx0, ty0, op)
 
 
 func _smooth(terrain, tx0, ty0, factor=1.0):
-	terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo)
+	var sum_op = SumOperator.new()
+	_foreach_xy(terrain, tx0, ty0, sum_op, false)
 	
-	var data = terrain.get_data()
-	var value_sum = 0
-	
-	for by in range(0, _data.size()):
-		var brush_row = _data[by]
-		for bx in range(0, brush_row.size()):
-			var brush_value = brush_row[bx]
-			var tx = tx0 + bx - _radius
-			var ty = ty0 + by - _radius
-			if terrain.cell_pos_is_valid(tx, ty):
-				var data_value = data[ty][tx]
-				value_sum += data_value * brush_value
-	
-	var value_mean = value_sum / _sum
-	
-	for by in range(0, _data.size()):
-		var brush_row = _data[by]
-		for bx in range(0, brush_row.size()):
-			var brush_value = brush_row[bx]
-			var tx = tx0 + bx - _radius
-			var ty = ty0 + by - _radius
-			if terrain.cell_pos_is_valid(tx, ty):
-				var data_value = data[ty][tx]
-				data[ty][tx] = lerp(data_value, value_mean, factor * brush_value)
+	var lerp_op = LerpOperator.new()
+	lerp_op.height = sum_op.sum / _sum
+	lerp_op.opacity = clamp(_opacity, 0.0, 1.0)
+	_foreach_xy(terrain, tx0, ty0, lerp_op)
+
 

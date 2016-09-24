@@ -18,6 +18,7 @@ export var smooth_shading = true setget set_smooth_shading
 export var quad_adaptation = false setget set_quad_adaptation
 export var generate_colliders = false setget set_generate_colliders
 
+# TODO reduz worked on float Image format recently, keep that in mind for future optimization
 var _data = []
 var _normals = []
 
