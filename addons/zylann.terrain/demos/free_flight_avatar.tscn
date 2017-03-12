@@ -1,0 +1,50 @@
+[gd_scene load_steps=3 format=1]
+
+[ext_resource path="res://addons/zylann.terrain/demos/debug_camera.gd" type="Script" id=1]
+[ext_resource path="res://addons/zylann.terrain/demos/terrain_ingame_editor.gd" type="Script" id=2]
+
+[node name="FreeFlightAvatar" type="Camera"]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( -1, 0, -8.74228e-08, -4.22154e-08, 0.875682, 0.482888, 7.65546e-08, 0.482888, -0.875682, 0, 6.30182, -8.60276 )
+projection = 0
+fov = 60.0
+near = 0.1
+far = 400.0
+keep_aspect = 1
+current = true
+visible_layers = 1048575
+environment = null
+h_offset = 0.0
+v_offset = 0.0
+script/script = ExtResource( 1 )
+sensitivity = 0.4
+min_angle = -90
+max_angle = 90
+speed = 10.0
+capture_mouse = true
+
+[node name="ingame_editor" type="Node" parent="."]
+
+script/script = ExtResource( 2 )
+
+[node name="TestCube" type="TestCube" parent="ingame_editor"]
+
+_import_transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
+transform/local = Transform( 0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0 )
+layers = 1
+geometry/visible = true
+geometry/material_override = null
+geometry/cast_shadow = 1
+geometry/receive_shadows = true
+geometry/range_begin = 0.0
+geometry/range_end = 0.0
+geometry/extra_cull_margin = 0.0
+geometry/billboard = false
+geometry/billboard_y = false
+geometry/depth_scale = false
+geometry/visible_in_all_rooms = false
+geometry/use_baked_light = false
+geometry/baked_light_tex_id = 0
+
+
