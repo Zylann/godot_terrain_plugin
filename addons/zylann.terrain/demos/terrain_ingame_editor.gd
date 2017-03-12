@@ -26,6 +26,13 @@ func _input(event):
 			_brush.set_radius(_brush.get_radius()+1)
 		elif event.button_index == BUTTON_WHEEL_DOWN:
 			_brush.set_radius(_brush.get_radius()-1)
+	
+	elif event.type == InputEvent.KEY and event.pressed:
+		if event.scancode == KEY_1:
+			# Spawn a test cube
+			var cube = preload("rb_cube.tscn").instance()
+			cube.set_translation(_cursor.get_translation() + Vector3(0,5,0))
+			_camera.get_parent().add_child(cube)
 
 
 func _process(delta):

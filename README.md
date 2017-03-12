@@ -13,6 +13,7 @@ Features
 - Paint and smooth the terrain in the editor
 - Brush with customizable shape, size and opacity
 - Takes advantage of frustum culling by chunking the terrain in multiple meshes
+- Collisions
 - Smooth or hard-edges rendering
 - Save to image and normal map
 - Terrain data saved inside the scene like Tilemap and Gridmap
@@ -35,7 +36,6 @@ TODO/ideas
 - Paint meshes on top of the terrain (grass, trees, rocks...) <-- I want to make a vegetation generator plugin too :p
 - Improve normals (data "pixels" produce lighting artefacts)
 - Texture painting
-- Physics (low-poly mesh collider? Or heightfield collider like PhysX does?)
 - Make live edition work
 - Mesh simplification (an editor lib would be welcome)
 - Infinite terrain mode

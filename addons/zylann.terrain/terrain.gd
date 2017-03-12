@@ -1,16 +1,11 @@
 tool
 extends Node
 
-
 const Util = preload("terrain_utils.gd")
+const Chunk = preload("terrain_chunk.gd")
 
 const CHUNK_SIZE = 16
 const MAX_TERRAIN_SIZE = 1024
-
-class Chunk:
-	var mesh_instance = null
-	var body = null
-	var pos = Vector2(0,0)
 
 export(int, 0, 1024) var terrain_size = 128 setget set_terrain_size, get_terrain_size
 export(Material) var material = null setget set_material, get_material
@@ -49,6 +44,7 @@ func _ready():
 	_data = Util.clone_grid(_data)
 	
 	_on_terrain_size_changed()
+	_on_generate_colliders_changed()
 	set_process(true)
 
 
@@ -271,6 +267,12 @@ func update_chunk_at(cx, cy):
 func update_chunk(chunk):
 	var mesh = _generate_mesh_at(chunk.pos.x * CHUNK_SIZE, chunk.pos.y * CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE)
 	chunk.mesh_instance.set_mesh(mesh)
+	
+	if get_tree().is_editor_hint() == false:
+		if generate_colliders:
+			chunk.update_collider()
+		else:
+			chunk.clear_collider()
 
 
 # This function is the most time-consuming one in this tool.
@@ -494,7 +496,11 @@ func set_generate_colliders(gen_colliders):
 
 
 func _on_generate_colliders_changed():
+	# Don't generate colliders if not in tree yet, will produce errors otherwise
 	if not is_inside_tree():
+		return
+	# Don't generate colliders in the editor, it's useless and time consuming
+	if get_tree().is_editor_hint():
 		return
 	
 	for cy in range(0, _chunks.size()):
@@ -502,12 +508,6 @@ func _on_generate_colliders_changed():
 		for cx in range(0, row.size()):
 			var chunk = row[cx]
 			if generate_colliders:
-				if chunk.body == null:
-					# TODO
-					pass
+				chunk.update_collider()
 			else:
-				if chunk.body != null:
-					chunk.body.queue_free()
-
-
-
+				chunk.clear_collider()
