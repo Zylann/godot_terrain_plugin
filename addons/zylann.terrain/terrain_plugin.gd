@@ -124,21 +124,27 @@ func forward_spatial_input_event(camera, event):
 	
 	if event.type == InputEvent.MOUSE_BUTTON:
 		if event.button_index == BUTTON_LEFT or event.button_index == BUTTON_RIGHT:
-			captured_event = true
-			if event.is_pressed():
-				_pressed = true
-			else:
+			
+			if event.is_pressed() == false:
 				_pressed = false
+			
+			# Need to check modifiers before capturing the event because they are used in navigation schemes
+			if event.control == false and event.alt == false:
 				
-				var data = current_object.pop_undo_redo_data()
-				var ur = get_undo_redo()
-				ur.create_action("Paint terrain")
-				ur.add_undo_method(self, "_undo_paint", current_object, data.undo)
-				ur.add_do_method(self, "_redo_paint", current_object, data.redo)
-				# Callback is disabled because data is too huge to be executed a second time
-				_disable_undo_callback = true
-				ur.commit_action()
-				_disable_undo_callback = false
+				if event.is_pressed():
+					_pressed = true
+				captured_event = true
+				
+				if _pressed:
+					var data = current_object.pop_undo_redo_data()
+					var ur = get_undo_redo()
+					ur.create_action("Paint terrain")
+					ur.add_undo_method(self, "_undo_paint", current_object, data.undo)
+					ur.add_do_method(self, "_redo_paint", current_object, data.redo)
+					# Callback is disabled because data is too huge to be executed a second time
+					_disable_undo_callback = true
+					ur.commit_action()
+					_disable_undo_callback = false
 	
 	elif _pressed and event.type == InputEvent.MOUSE_MOTION:
 		
