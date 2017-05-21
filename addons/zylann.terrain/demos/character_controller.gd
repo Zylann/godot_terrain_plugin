@@ -5,6 +5,7 @@ export var gravity = 9.8
 export(NodePath) var head = null
 
 var _velocity = Vector3()
+var _grounded = false
 var _head = null
 
 
@@ -35,13 +36,21 @@ func _fixed_process(delta):
 	_velocity.z = motor.z
 	_velocity.y -= gravity * delta
 	
+	if _grounded and Input.is_key_pressed(KEY_SPACE):
+		_velocity.y = 4.0
+		_grounded = false
+	
 	var motion = _velocity * delta
 	
 	var rem = move(motion)
 	
 	if is_colliding():
 		var n = get_collision_normal()
-		rem = n.slide(rem)
-		_velocity = n.slide(_velocity)
+		var k = 1.0#clamp(n.y, 0, 1)
+		rem = n.slide(rem)*k
+		_velocity = n.slide(_velocity)*k
+		_grounded = true
 		move(rem)
-
+	else:
+		_grounded = false
+	#get_node("debug").set_text("Grounded=" + str(_grounded))
