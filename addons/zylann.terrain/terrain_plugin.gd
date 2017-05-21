@@ -13,6 +13,7 @@ var _pressed = false
 var _brush = null
 var _disable_undo_callback = false
 var _panel = null
+var _texture_colors = []
 
 
 func _enter_tree():
@@ -27,6 +28,7 @@ func _enter_tree():
 	_panel.connect("brush_size_changed", self, "_on_brush_size_changed")
 	_panel.connect("brush_mode_changed", self, "_on_brush_mode_changed")
 	_panel.connect("brush_shape_changed", self, "_on_brush_shape_changed")
+	_panel.connect("brush_texture_changed", self, "_on_brush_texture_changed")
 	_panel.connect("brush_opacity_changed", self, "_on_brush_opacity_changed")
 	_panel.connect("brush_height_changed", self, "_on_brush_height_changed")
 	_panel.connect("ask_save_to_image", self, "_on_ask_save_to_image")
@@ -57,8 +59,13 @@ func _on_brush_shape_changed(tex):
 	_brush.generate_from_image(tex.get_data())
 
 
+func _on_brush_texture_changed(tex):
+	if typeof(tex) == TYPE_INT:
+		var mod = _texture_colors[tex]
+		_brush.set_modulate(mod)
+
+
 func _on_brush_height_changed(height):
-	print("Three " + str(height))
 	_brush.set_flatten_height(height)
 
 
@@ -110,6 +117,14 @@ func handles(object):
 
 func edit(object):
 	current_object = object
+	var info = load_textures_info(current_object)
+	if info != null:
+		_texture_colors = info.colors
+		# TODO These textures should be updated if they are changed on the material
+		_panel.set_textures(info.textures)
+	else:
+		_texture_colors = null
+		_panel.set_textures([])
 
 
 func make_visible(visible):
@@ -135,8 +150,8 @@ func forward_spatial_input_event(camera, event):
 					_pressed = true
 				captured_event = true
 				
-				if _pressed:
-					var data = current_object.pop_undo_redo_data()
+				if _pressed == false:
+					var data = current_object.pop_undo_redo_data(_brush.get_channel())
 					var ur = get_undo_redo()
 					ur.create_action("Paint terrain")
 					ur.add_undo_method(self, "_undo_paint", current_object, data.undo)
@@ -167,3 +182,58 @@ func _redo_paint(terrain, data):
 	if _disable_undo_callback == false:
 		terrain.apply_chunks_data(data)
 
+
+func load_textures_info(terrain):
+	var mat = terrain.get_material()
+	if !(mat extends ShaderMaterial):
+		print("Terrain material isn't a ShaderMaterial")
+		return null
+	
+	var material_path = mat.get_path()
+	var meta_path = material_path.substr(0, material_path.length() - material_path.extension().length())
+	meta_path += "shadermeta"
+	
+	var file = File.new()
+	if not file.file_exists(meta_path):
+		return null
+	
+	var ret = file.open(meta_path, File.READ)
+	if ret != 0:
+		print("Couldn't open ", meta_path, " error ", ret)
+		return null
+	
+	var json = file.get_as_text()
+	file.close()
+	var data = {}
+	var ret = data.parse_json(json)
+	if ret != 0:
+		print("Failed to parse json, error ", ret)
+		return null
+	
+	if data.has("zylann.terrain") == false:
+		print("No terrain data in ", meta_path)
+		return null
+	data = data["zylann.terrain"]
+	
+	if data.has("texture_colors") == false:
+		print("Terrain meta has no texture info ", meta_path)
+		return null
+	var textures_data = data.texture_colors
+	
+	var textures = []
+	var colors = []
+	
+	for k in textures_data:
+		var v = textures_data[k]
+		var color = Color(v[0], v[1], v[2], v[3])
+		var texture = mat.get_shader_param(k)
+		if typeof(texture) != TYPE_OBJECT or texture extends Texture == false:
+			print("Shader param ", k, " is not a Texture: ", texture)
+			texture = null
+		textures.push_back(texture)
+		colors.push_back(color)
+	
+	return {
+		"textures": textures,
+		"colors": colors
+	}

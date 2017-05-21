@@ -4,6 +4,7 @@ extends Control
 const Brush = preload("terrain_brush.gd")
 
 signal brush_shape_changed
+signal brush_texture_changed
 signal brush_size_changed
 signal brush_opacity_changed
 signal brush_mode_changed
@@ -11,6 +12,7 @@ signal brush_height_changed
 signal ask_save_to_image
 
 onready var _shape_selector = get_node("shapes")
+onready var _texture_selector = get_node("textures")
 
 onready var _size_line_edit = get_node("params/size/LineEdit")
 onready var _size_slider = get_node("params/size/slider")
@@ -32,6 +34,7 @@ func _ready():
 		_first_ready = true
 		
 		_build_shape_selector()
+		_build_texture_selector()
 		
 		# TODO Make a reusable slider using property funcrefs on the brush object
 		_size_slider.connect("value_changed", self, "_on_size_slider_value_changed")
@@ -45,6 +48,9 @@ func _ready():
 		_mode_selector.connect("button_selected", self, "_on_mode_selector_button_selected")
 		
 		_save_to_image_button.connect("pressed", self, "_on_save_to_image_button_clicked")
+		
+		_shape_selector.connect("item_selected", self, "_on_shape_selected")
+		_texture_selector.connect("item_selected", self, "_on_texture_selected")
 
 
 func _build_shape_selector():
@@ -59,13 +65,27 @@ func _build_shape_selector():
 		var brush_tex = load(brush_dir + "/" + path)
 		if brush_tex != null:
 			_shape_selector.add_icon_item(brush_tex)
-	
-	_shape_selector.connect("item_selected", self, "_on_shape_selected")
+
+
+func _build_texture_selector():
+	_texture_selector.set_same_column_width(true)
+	_texture_selector.set_max_columns(0)
+	_texture_selector.set_fixed_icon_size(Vector2(32,32))
+
+
+func set_textures(textures):
+	_texture_selector.clear()
+	for tex in textures:
+		_texture_selector.add_icon_item(tex)
 
 
 func _on_shape_selected(index):
 	var tex = _shape_selector.get_item_icon(index)
 	emit_signal("brush_shape_changed", tex)
+
+
+func _on_texture_selected(index):
+	emit_signal("brush_texture_changed", index)
 
 
 func _on_size_slider_value_changed(value):

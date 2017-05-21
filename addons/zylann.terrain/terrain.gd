@@ -8,6 +8,13 @@ const Mesher = preload("terrain_mesher.gd")
 const CHUNK_SIZE = 16
 const MAX_TERRAIN_SIZE = 1024
 
+# Indexes for terrain data channels
+const DATA_HEIGHT = 0
+const DATA_NORMALS = 1
+const DATA_COLOR = 2
+const DATA_CHANNEL_COUNT = 3
+
+# Note: the limit of 1024 is only because above this, GDScript and rendering become too slow
 export(int, 0, 1024) var terrain_size = 128 setget set_terrain_size, get_terrain_size
 export(Material) var material = null setget set_material, get_material
 export var smooth_shading = true setget set_smooth_shading
@@ -16,6 +23,9 @@ export var generate_colliders = false setget set_generate_colliders
 
 # TODO reduz worked on float Image format recently, keep that in mind for future optimization
 var _data = []
+var _colors = []
+
+# Calculated
 var _normals = []
 
 var _chunks = []
@@ -32,6 +42,11 @@ func _get_property_list():
 			"name": "_data",
 			"type": TYPE_ARRAY,
 			"usage": PROPERTY_USAGE_STORAGE
+		},
+		{
+			"name": "_colors",
+			"type": TYPE_ARRAY,
+			"usage": PROPERTY_USAGE_STORAGE
 		}
 	]
 
@@ -43,6 +58,7 @@ func _ready():
 	# - reloading the script makes data LOST FOREVER
 	# UGLY FIX, remove asap when Godot will be fixed, it severely impacts loading performance on huge terrains
 	_data = Util.clone_grid(_data)
+	_colors = Util.clone_grid(_colors)
 	
 	_on_terrain_size_changed()
 	_on_generate_colliders_changed()
@@ -86,10 +102,22 @@ func set_quad_adaptation(enable):
 		quad_adaptation = enable
 		_force_update_all_chunks()
 
+# TODO Should be renamed get_height_data (could also use get_data_channel)
 # Direct data access for better performance.
 # If you want to modify the data through this, don't forget to set the area as dirty
 func get_data():
 	return _data
+
+func get_data_channel(channel):
+	if channel == DATA_HEIGHT:
+		return _data
+	elif channel == DATA_COLOR:
+		return _colors
+	elif channel == DATA_NORMALS:
+		return _normals
+	else:
+		print("Unknown channel " + str(channel))
+		assert(channel < DATA_CHANNEL_COUNT)
 
 
 func _on_terrain_size_changed():
@@ -103,6 +131,7 @@ func _on_terrain_size_changed():
 		
 		Util.resize_grid(_data, terrain_size+1, terrain_size+1, 0)
 		Util.resize_grid(_normals, terrain_size+1, terrain_size+1, Vector3(0,1,0))
+		Util.resize_grid(_colors, terrain_size+1, terrain_size+1, Color(1,1,1,1))
 		Util.resize_grid(_chunks, _chunks_x, _chunks_y, funcref(self, "_create_chunk_cb"), funcref(self, "_delete_chunk_cb"))
 		
 		for key in _dirty_chunks.keys():
@@ -161,7 +190,7 @@ func _create_chunk_cb(x, y):
 	return chunk
 
 # Call this just before modifying the terrain
-func set_area_dirty(tx, ty, radius, mark_for_undo=false):
+func set_area_dirty(tx, ty, radius, mark_for_undo=false, data_channel=DATA_HEIGHT):
 	var cx_min = (tx - radius) / CHUNK_SIZE
 	var cy_min = (ty - radius) / CHUNK_SIZE
 	var cx_max = (tx + radius) / CHUNK_SIZE
@@ -174,18 +203,20 @@ func set_area_dirty(tx, ty, radius, mark_for_undo=false):
 				if mark_for_undo:
 					var chunk = _chunks[cy][cx]
 					if not _undo_chunks.has(chunk):
-						var data = extract_chunk_data(cx, cy)
+						var data = extract_chunk_data(cx, cy, data_channel)
 						_undo_chunks[chunk] = data
 
 
-func extract_chunk_data(cx, cy):
+func extract_chunk_data(cx, cy, data_channel):
 	var x0 = cx * CHUNK_SIZE
 	var y0 = cy * CHUNK_SIZE
-	var cell_data = Util.grid_extract_area_safe_crop(_data, x0, y0, CHUNK_SIZE, CHUNK_SIZE)
+	var grid = get_data_channel(data_channel)
+	var cell_data = Util.grid_extract_area_safe_crop(grid, x0, y0, CHUNK_SIZE, CHUNK_SIZE)
 	var d = {
 		"cx": cx,
 		"cy": cy,
-		"data": cell_data
+		"data": cell_data,
+		"channel": data_channel
 	}
 	return d
 
@@ -195,10 +226,11 @@ func apply_chunks_data(chunks_data):
 		_set_chunk_dirty_at(cdata.cx, cdata.cy)
 		var x0 = cdata.cx * CHUNK_SIZE
 		var y0 = cdata.cy * CHUNK_SIZE
-		Util.grid_paste(cdata.data, _data, x0, y0)
+		var grid = get_data_channel(cdata.channel)
+		Util.grid_paste(cdata.data, grid, x0, y0)
 
-# Get this data just after finishing an edit action
-func pop_undo_redo_data():
+# Get this data just after finishing an edit action (if you use undo/redo)
+func pop_undo_redo_data(data_channel):
 	var undo_data = []
 	var redo_data = []
 	
@@ -207,7 +239,7 @@ func pop_undo_redo_data():
 		var undo = _undo_chunks[k]
 		undo_data.append(undo)
 		
-		var redo = extract_chunk_data(undo.cx, undo.cy)
+		var redo = extract_chunk_data(undo.cx, undo.cy, data_channel)
 		redo_data.append(redo)
 		
 		# Debug check
@@ -277,7 +309,7 @@ func update_chunk(chunk):
 	if smooth_shading:
 		_update_normals_data_at(x0, y0, w+1, h+1)
 	
-	var mesh = Mesher.make_heightmap(_data, _normals, x0, y0, w, h, smooth_shading, quad_adaptation)
+	var mesh = Mesher.make_heightmap(_data, _normals, _colors, x0, y0, w, h, smooth_shading, quad_adaptation)
 	chunk.mesh_instance.set_mesh(mesh)
 	
 	if get_tree().is_editor_hint() == false:
@@ -286,7 +318,7 @@ func update_chunk(chunk):
 		else:
 			chunk.clear_collider()
 
-
+# TODO Should be renamed get_terrain_height
 func get_terrain_value(x, y):
 	if x < 0 or y < 0 or x >= terrain_size or y >= terrain_size:
 		return 0.0

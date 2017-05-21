@@ -1,0 +1,23 @@
+{
+  "__comment": "This file tells the terrain tool which colors to paint in the vertices for textures",
+  "zylann.terrain": {
+    "texture_colors": {
+      "terrain_dirt": [0, 0, 0, 0],
+      "terrain_cliff": [1, 0, 0, 0],
+      "terrain_grass": [0, 1, 0, 0],
+      "terrain_sand": [1, 1, 0, 0],
+      "terrain_tarmac": [0, 0, 1, 0],
+      "terrain_mud": [1, 0, 1, 0],
+      "terrain_straw": [0, 1, 1, 0],
+      "terrain_drymud": [1, 1, 1, 0],
+      "terrain_cobble": [0, 0, 0, 1],
+      "terrain_slate": [1, 0, 0, 1],
+      "terrain_daisygrass": [0, 1, 0, 1],
+      "terrain_mesa": [1, 1, 0, 1],
+      "terrain_concrete": [0, 0, 1, 1],
+      "terrain_bog": [1, 0, 1, 1],
+      "terrain_concslab": [0, 1, 1, 1],
+      "terrain_leaf": [1, 1, 1, 1]
+	  }
+  }
+}

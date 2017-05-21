@@ -1,12 +1,14 @@
 tool
 
+# TODO GET RID OF SURFACE TOOL
+
 # heights: array of arrays of floats
 # normals: arrays of arrays of Vector3
 # x0, y0, w, h: sub-rectangle to generate from the above grids
 # smooth_shading: if set to true, normals will be used instead of "polygon-looking" ones
 # quad_adaptation: experimental. If true, quad geometry will be flipped in some situations for better shading.
 # returns: a Mesh
-static func make_heightmap(heights, normals, x0, y0, w, h, smooth_shading=true, quad_adaptation=false):
+static func make_heightmap(heights, normals, colors, x0, y0, w, h, smooth_shading=true, quad_adaptation=false):
 	var st = SurfaceTool.new()
 	
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -28,8 +30,11 @@ static func make_heightmap(heights, normals, x0, y0, w, h, smooth_shading=true, 
 	var uv_scale = Vector2(1.0/terrain_size_x, 1.0/terrain_size_y)
 	
 	for y in range(y0, max_y):
+		
 		var row = heights[y]
 		var normal_row = normals[y]
+		var color_row = colors[y]
+		
 		for x in range(x0, max_x):
 			
 			var p00 = Vector3(x-x0, row[x], y-y0)
@@ -41,6 +46,11 @@ static func make_heightmap(heights, normals, x0, y0, w, h, smooth_shading=true, 
 			var uv10 = Vector2(x+1, y) * uv_scale
 			var uv11 = Vector2(x+1, y+1) * uv_scale
 			var uv01 = Vector2(x, y+1) * uv_scale
+			
+			var c00 = color_row[x]
+			var c10 = color_row[x+1]
+			var c01 = colors[y+1][x]
+			var c11 = colors[y+1][x+1]
 			
 			# TODO This is where optimization becomes a pain.
 			# Find a way to use arrays instead of interleaved data. SurfaceTool is bad at this...
@@ -65,26 +75,32 @@ static func make_heightmap(heights, normals, x0, y0, w, h, smooth_shading=true, 
 					
 					st.add_normal(n00)
 					st.add_uv(uv00)
+					st.add_color(c00)
 					st.add_vertex(p00)
 					
 					st.add_normal(n10)
 					st.add_uv(uv10)
+					st.add_color(c10)
 					st.add_vertex(p10)
 					
 					st.add_normal(n01)
 					st.add_uv(uv01)
+					st.add_color(c01)
 					st.add_vertex(p01)
 		
 					st.add_normal(n10)
 					st.add_uv(uv10)
+					st.add_color(c10)
 					st.add_vertex(p10)
 					
 					st.add_normal(n11)
 					st.add_uv(uv11)
+					st.add_color(c11)
 					st.add_vertex(p11)
 					
 					st.add_normal(n01)
 					st.add_uv(uv01)
+					st.add_color(c01)
 					st.add_vertex(p01)
 					
 				else:
@@ -96,65 +112,83 @@ static func make_heightmap(heights, normals, x0, y0, w, h, smooth_shading=true, 
 					
 					st.add_normal(n00)
 					st.add_uv(uv00)
+					st.add_color(c00)
 					st.add_vertex(p00)
 					
 					st.add_normal(n10)
 					st.add_uv(uv10)
+					st.add_color(c10)
 					st.add_vertex(p10)
 					
 					st.add_normal(n11)
 					st.add_uv(uv11)
+					st.add_color(c11)
 					st.add_vertex(p11)
 		
 					st.add_normal(n00)
 					st.add_uv(uv00)
+					st.add_color(c00)
 					st.add_vertex(p00)
 					
 					st.add_normal(n11)
 					st.add_uv(uv11)
+					st.add_color(c11)
 					st.add_vertex(p11)
 					
 					st.add_normal(n01)
 					st.add_uv(uv01)
+					st.add_color(c01)
 					st.add_vertex(p01)
 			
 			else:
 				if reverse_quad:
 					st.add_uv(uv00)
+					st.add_color(c00)
 					st.add_vertex(p00)
 					
 					st.add_uv(uv10)
+					st.add_color(c10)
 					st.add_vertex(p10)
 					
 					st.add_uv(uv01)
+					st.add_color(c01)
 					st.add_vertex(p01)
 		
 					st.add_uv(uv10)
+					st.add_color(c10)
 					st.add_vertex(p10)
 					
 					st.add_uv(uv11)
+					st.add_color(c11)
 					st.add_vertex(p11)
 					
 					st.add_uv(uv01)
+					st.add_color(c01)
 					st.add_vertex(p01)
 				
 				else:
 					st.add_uv(uv00)
+					st.add_color(c00)
 					st.add_vertex(p00)
 					
 					st.add_uv(uv10)
+					st.add_color(c10)
 					st.add_vertex(p10)
 					
 					st.add_uv(uv11)
+					st.add_color(c11)
 					st.add_vertex(p11)
-		
+					
 					st.add_uv(uv00)
+					st.add_color(c00)
 					st.add_vertex(p00)
 					
 					st.add_uv(uv11)
+					st.add_color(c11)
 					st.add_vertex(p11)
 					
 					st.add_uv(uv01)
+					st.add_color(c01)
 					st.add_vertex(p01)
 					
 	# When smoothing is active, we can't rely on automatic normals,
@@ -162,7 +196,7 @@ static func make_heightmap(heights, normals, x0, y0, w, h, smooth_shading=true, 
 	# so instead we generate the normals from the actual terrain data
 	if not smooth_shading:
 		st.generate_normals()
-
+	
 	st.index()
 	var mesh = st.commit()
 	return mesh

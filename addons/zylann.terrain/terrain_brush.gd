@@ -1,25 +1,30 @@
-
+tool # ONLY because Godot doesn't report errors if I omit it ><'
 const Util = preload("terrain_utils.gd")
+const Terrain = preload("terrain.gd")
 
 const MODE_ADD = 0
 const MODE_SUBTRACT = 1
 const MODE_SMOOTH = 2
 const MODE_FLATTEN = 3
-const MODE_COUNT = 4
+const MODE_TEXTURE = 4
+const MODE_COUNT = 5
 
 
-var _data = []
+var _data = [] # TODO Should be renamed "_shape"
+var _modulate = 1.0
 var _radius = 4
 var _opacity = 1.0 # TODO Should be renamed "hardness"
 var _sum = 0.0
 var _mode = MODE_ADD
-var _mode_secondary = MODE_SUBTRACT
+#var _mode_secondary = MODE_SUBTRACT
+var _channel = Terrain.DATA_HEIGHT
 var _source_image = null
 var _use_undo_redo = false
 var _flatten_height = 0.0
 
 
 func _init():
+	# So that it works even if no brush textures exist at all
 	generate(_radius)
 
 
@@ -86,9 +91,22 @@ func set_opacity(opacity):
 func set_mode(mode):
 	assert(mode >= 0 and mode < MODE_COUNT)
 	_mode = mode
+	if _mode == MODE_TEXTURE:
+		_channel = Terrain.DATA_COLOR
+	else:
+		_channel = Terrain.DATA_HEIGHT
+
+
+func get_channel():
+	return _channel
+
 
 func get_mode():
 	return _mode
+
+
+func set_modulate(m):
+	_modulate = m
 
 
 func set_flatten_height(h):
@@ -102,7 +120,7 @@ func set_undo_redo(use_undo_redo):
 	_use_undo_redo = use_undo_redo
 
 
-func paint_world_pos(terrain, wpos, override_mode=-1):
+func paint_world_pos(terrain, wpos, override_mode=-1, channel=0):
 	var cell_pos = terrain.world_to_cell_pos(wpos)
 	var delta = _opacity * 1.0/60.0
 	
@@ -110,27 +128,33 @@ func paint_world_pos(terrain, wpos, override_mode=-1):
 	if override_mode != -1:
 		mode = override_mode
 	
+	# Safety checks
+	assert(!(_channel == Terrain.DATA_COLOR and typeof(_modulate) != TYPE_COLOR))
+
 	if mode == MODE_ADD:
-		_paint(terrain, cell_pos.x, cell_pos.y, 50.0*delta)
+		_paint_height(terrain, cell_pos.x, cell_pos.y, 50.0*delta)
 	
 	elif mode == MODE_SUBTRACT:
-		_paint(terrain, cell_pos.x, cell_pos.y, -50*delta)
+		_paint_height(terrain, cell_pos.x, cell_pos.y, -50*delta)
 		
 	elif mode == MODE_SMOOTH:
-		_smooth(terrain, cell_pos.x, cell_pos.y, 4.0*delta)
+		_smooth_height(terrain, cell_pos.x, cell_pos.y, 4.0*delta)
 	
 	elif mode == MODE_FLATTEN:
-		_flatten(terrain, cell_pos.x, cell_pos.y, _flatten_height)
+		_flatten_height(terrain, cell_pos.x, cell_pos.y, _flatten_height)
+	
+	elif mode == MODE_TEXTURE:
+		_paint_texture(terrain, cell_pos.x, cell_pos.y, _modulate)
 	
 	else:
 		error("Unknown paint mode " + str(mode))
 
 
-func _foreach_xy(terrain, tx0, ty0, operator, modifier=true):
+func _foreach_xy(terrain, tx0, ty0, operator, channel, modifier=true):
 	if modifier:
-		terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo)
+		terrain.set_area_dirty(tx0, ty0, _radius, _use_undo_redo, channel)
 	
-	var data = terrain.get_data()
+	var data = terrain.get_data_channel(channel)
 	var brush_radius = _data.size()/2
 	
 	operator.dst = data
@@ -157,9 +181,14 @@ class AddOperator extends Operator:
 		dst[y][x] = dst[y][x] + factor * value
 
 class LerpOperator extends Operator:
-	var height = 0.0
+	var target_value = 0.0
 	func exec(x, y, value):
-		dst[y][x] = lerp(dst[y][x], height, value * opacity)
+		dst[y][x] = lerp(dst[y][x], target_value, value * opacity)
+
+class LerpOperatorColor extends Operator:
+	var target_value = Color(1,1,1,1)
+	func exec(x, y, value):
+		dst[y][x] = dst[y][x].linear_interpolate(target_value, value * opacity)
 
 class SumOperator extends Operator:
 	var sum = 0.0
@@ -167,26 +196,31 @@ class SumOperator extends Operator:
 		sum += dst[y][x] * value
 
 
-func _paint(terrain, tx0, ty0, factor=1.0):
+func _paint_height(terrain, tx0, ty0, factor=1.0):
 	var op = AddOperator.new()
 	op.factor = factor
-	_foreach_xy(terrain, tx0, ty0, op)
+	_foreach_xy(terrain, tx0, ty0, op, _channel)
 
 
-func _flatten(terrain, tx0, ty0, height):
+func _flatten_height(terrain, tx0, ty0, height):
 	var op = LerpOperator.new()
-	op.height = height
+	op.target_value = height
 	op.opacity = clamp(_opacity, 0.0, 1.0)
-	_foreach_xy(terrain, tx0, ty0, op)
+	_foreach_xy(terrain, tx0, ty0, op,  _channel)
 
 
-func _smooth(terrain, tx0, ty0, factor=1.0):
+func _smooth_height(terrain, tx0, ty0, factor=1.0):
 	var sum_op = SumOperator.new()
-	_foreach_xy(terrain, tx0, ty0, sum_op, false)
+	_foreach_xy(terrain, tx0, ty0, sum_op, _channel, false)
 	
 	var lerp_op = LerpOperator.new()
-	lerp_op.height = sum_op.sum / _sum
+	lerp_op.target_value = sum_op.sum / _sum
 	lerp_op.opacity = clamp(_opacity, 0.0, 1.0)
-	_foreach_xy(terrain, tx0, ty0, lerp_op)
+	_foreach_xy(terrain, tx0, ty0, lerp_op, _channel)
 
 
+func _paint_texture(terrain, tx0, ty0, factor=Color(1,1,1,1)):
+	var op = LerpOperatorColor.new()
+	op.target_value = factor
+	op.opacity = clamp(_opacity, 0.0, 1.0)
+	_foreach_xy(terrain, tx0, ty0, op, _channel)
