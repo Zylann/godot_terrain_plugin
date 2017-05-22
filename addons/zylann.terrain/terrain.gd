@@ -309,7 +309,19 @@ func update_chunk(chunk):
 	if smooth_shading:
 		_update_normals_data_at(x0, y0, w+1, h+1)
 	
-	var mesh = Mesher.make_heightmap(_data, _normals, _colors, x0, y0, w, h, smooth_shading, quad_adaptation)
+	var opt = {
+		"heights": _data,
+		"normals": _normals,
+		"colors": _colors,
+		"x0": x0,
+		"y0": y0,
+		"w": w,
+		"h": h,
+		"smooth_shading": smooth_shading
+	}
+	
+	#var mesh = Mesher.make_heightmap(_data, _normals, _colors, x0, y0, w, h, smooth_shading, quad_adaptation)
+	var mesh = Mesher.make_heightmap2(opt)
 	chunk.mesh_instance.set_mesh(mesh)
 	
 	if get_tree().is_editor_hint() == false:
