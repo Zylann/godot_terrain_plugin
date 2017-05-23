@@ -321,7 +321,7 @@ func update_chunk(chunk):
 	}
 	
 	#var mesh = Mesher.make_heightmap(_data, _normals, _colors, x0, y0, w, h, smooth_shading, quad_adaptation)
-	var mesh = Mesher.make_heightmap2(opt)
+	var mesh = Mesher.make_heightmap(opt)
 	chunk.mesh_instance.set_mesh(mesh)
 	
 	if get_tree().is_editor_hint() == false:
