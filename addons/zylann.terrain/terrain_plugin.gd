@@ -14,6 +14,7 @@ var _brush = null
 var _disable_undo_callback = false
 var _panel = null
 var _texture_colors = []
+var _last_lod_update = OS.get_ticks_msec()
 
 
 func _enter_tree():
@@ -136,6 +137,12 @@ func make_visible(visible):
 
 func forward_spatial_input_event(camera, event):
 	var captured_event = false
+	
+	# Workaround because viewport.get_camera() returns null in the editor
+	var now = OS.get_ticks_msec()
+	if now - _last_lod_update > 50:
+		current_object.update_lods(camera)
+		_last_lod_update = now
 	
 	if event.type == InputEvent.MOUSE_BUTTON:
 		if event.button_index == BUTTON_LEFT or event.button_index == BUTTON_RIGHT:

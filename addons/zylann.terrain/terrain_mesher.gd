@@ -26,12 +26,15 @@ static func make_heightmap(opt):
 	var w = opt.w
 	var h = opt.h
 	var smooth_shading = tryget(opt, "smooth_shading", true)
-
+	var lod_index = tryget(opt, "lod_index", 0)
+	
 	if smooth_shading == false:
 		return make_heightmap_faceted(input_heights, input_colors, x0, y0, w, h)
-		
-	var max_y = y0 + w
-	var max_x = x0 + h
+	
+	var stride = 1 << lod_index
+	
+	var max_y = y0 + w*stride
+	var max_x = x0 + h*stride
 	
 	var terrain_size_x = input_heights.size()-1
 	var terrain_size_y = 0
@@ -51,11 +54,11 @@ static func make_heightmap(opt):
 		
 	var uv_scale = Vector2(1.0/terrain_size_x, 1.0/terrain_size_y)
 	
-	for y in range(y0, max_y+1):
+	for y in range(y0, max_y+1, stride):
 		var hrow = input_heights[y]
 		var crow = input_colors[y]
 		var nrow = input_normals[y]
-		for x in range(x0, max_x+1):
+		for x in range(x0, max_x+1, stride):
 			vertices.push_back(Vector3(x-x0, hrow[x], y-y0))
 			uv.push_back(Vector2(x, y) * uv_scale)
 			colors.push_back(crow[x])
@@ -65,9 +68,6 @@ static func make_heightmap(opt):
 		print("No vertices generated! ", x0, ", ", y0, ", ", w, ", ", h)
 		return null
 	
-	var vertex_count = vertices.size()
-	var quad_count = (w-1)*(h-1)
-
 	var i = 0
 	for y in range(0, h):
 		for x in range(0, w):

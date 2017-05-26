@@ -3,9 +3,39 @@ var mesh_instance = null
 var collider = null
 var pos = Vector2(0,0)
 
+
+func clear():
+	# Completely deletes chunk data and nodes, you can free it after that
+	if mesh_instance != null:
+		mesh_instance.queue_free()
+	if collider != null:
+		collider.queue_free()
+
+
+#func recycle():
+#	# Clears mesh and hides the chunk for a later re-use
+#	if mesh_instance:
+#		mesh_instance.set_mesh(null)
+#		mesh_instance.hide()
+	# TOOD What about the collider?
+
+
+func create(x, y, chunk_size, parent, material):
+	if mesh_instance == null:
+		mesh_instance = MeshInstance.new()
+	mesh_instance.set_name("chunk_" + str(x) + "_" + str(y))
+	mesh_instance.set_translation(Vector3(x,0,y) * chunk_size)
+	if material != null:
+		mesh_instance.set_material_override(material)
+	mesh_instance.show()
+	pos = Vector2(x,y)
+	if mesh_instance.is_inside_tree() == false:
+		parent.add_child(mesh_instance)
+
+
 func update_collider():
 	clear_collider()
-	if collider == null:
+	if collider == null and mesh_instance != null:
 		# TODO This "helper" is very confusing.
 		# It does stuff behind the scenes I had no idea of,
 		# and returns nothing :/
