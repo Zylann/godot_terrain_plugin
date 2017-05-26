@@ -10,7 +10,8 @@ Features
 
 - Custom Terrain node
 - Resizeable square between 1 and 1024 units of space
-- Paint and smooth the terrain in the editor
+- Raise, carve and smooth the terrain in the editor
+- Paint vertex colors to add textures with shaders 
 - Brush with customizable shape, size and opacity
 - Takes advantage of frustum culling by chunking the terrain in multiple meshes
 - Collisions
@@ -35,7 +36,6 @@ TODO/ideas
 - Make Terrain inherit Spatial so it can be moved around
 - Paint meshes on top of the terrain (grass, trees, rocks...) <-- I want to make a vegetation generator plugin too :p
 - Improve normals (data "pixels" produce lighting artefacts)
-- Texture painting
 - Make live edition work
 - Mesh simplification (an editor lib would be welcome)
 - Infinite terrain mode
