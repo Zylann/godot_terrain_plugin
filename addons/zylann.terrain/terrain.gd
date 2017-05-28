@@ -204,7 +204,7 @@ func set_area_dirty(tx, ty, radius, mark_for_undo=false, data_channel=DATA_HEIGH
 
 
 func _set_lod_chunk_dirty_cb(chunk, origin, lod_index):
-	if _dirty_lod_chunks.size() < lod_index:
+	if _dirty_lod_chunks.size() <= lod_index:
 		_dirty_lod_chunks.resize(lod_index+1)
 	var chunks = _dirty_lod_chunks[lod_index]
 	if chunks == null:
