@@ -181,6 +181,10 @@ func _on_terrain_size_changed():
 
 # Call this just before modifying the terrain
 func set_area_dirty(tx, ty, radius, mark_for_undo=false, data_channel=DATA_HEIGHT):
+	assert(typeof(tx) == TYPE_INT)
+	assert(typeof(ty) == TYPE_INT)
+	assert(typeof(radius) == TYPE_INT)
+	
 	var cx_min = (tx - radius) / CHUNK_SIZE
 	var cy_min = (ty - radius) / CHUNK_SIZE
 	var cx_max = (tx + radius) / CHUNK_SIZE

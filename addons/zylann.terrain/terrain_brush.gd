@@ -49,6 +49,8 @@ func generate_procedural(radius):
 
 
 func generate_from_image(image, radius=-1):
+	radius = int(round(radius))
+	
 	if image.get_width() != image.get_height():
 		print("Brush shape image must be square!")
 		return
@@ -76,6 +78,7 @@ func generate_from_image(image, radius=-1):
 
 
 func set_radius(r):
+	r = int(round(r))
 	if r > 0 and r != _radius:
 		_radius = r
 		generate(r)
@@ -130,21 +133,28 @@ func paint_world_pos(terrain, wpos, override_mode=-1, channel=0):
 	
 	# Safety checks
 	assert(!(_channel == Terrain.DATA_COLOR and typeof(_modulate) != TYPE_COLOR))
+	
+	# We really want integers, even if floats can contain them fine,
+	# because any further calculations on these coordinates
+	# could introduce biases or decimals!
+	# https://github.com/godotengine/godot/issues/3286
+	var x = int(round(cell_pos.x))
+	var y = int(round(cell_pos.y))
 
 	if mode == MODE_ADD:
-		_paint_height(terrain, cell_pos.x, cell_pos.y, 50.0*delta)
+		_paint_height(terrain, x, y, 50.0*delta)
 	
 	elif mode == MODE_SUBTRACT:
-		_paint_height(terrain, cell_pos.x, cell_pos.y, -50*delta)
+		_paint_height(terrain, x, y, -50*delta)
 		
 	elif mode == MODE_SMOOTH:
-		_smooth_height(terrain, cell_pos.x, cell_pos.y, 4.0*delta)
+		_smooth_height(terrain, x, y, 4.0*delta)
 	
 	elif mode == MODE_FLATTEN:
-		_flatten_height(terrain, cell_pos.x, cell_pos.y, _flatten_height)
+		_flatten_height(terrain, x, y, _flatten_height)
 	
 	elif mode == MODE_TEXTURE:
-		_paint_texture(terrain, cell_pos.x, cell_pos.y, _modulate)
+		_paint_texture(terrain, x, y, _modulate)
 	
 	else:
 		error("Unknown paint mode " + str(mode))
