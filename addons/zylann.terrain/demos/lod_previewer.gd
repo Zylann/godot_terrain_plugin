@@ -22,11 +22,12 @@ func _ready():
 func _process(delta):
 	if not _is_external_lodder:
 		var pos = get_global_mouse_pos()
+		pos = Vector3(pos.x, 0, pos.y)
 		lodder.update_now(pos)
 	update()
 
 
 func _draw():
-	lodder.debug_draw(self)
+	lodder.debug_draw_tree(self)
 
 

@@ -1,8 +1,12 @@
 tool
 
 class QuadtreeNode:
+	# If the node has children, this will be an array of 4 nodes
 	var children = null
+	# If children is null, this will be set to a chunk.
+	# If the chunk is still null, it's pending generation.
 	var chunk = null
+	# Origin of the node, relative to its lod level
 	var origin = Vector2()
 
 var make_chunk_func = null
@@ -58,7 +62,7 @@ func from_sizes(base_size, full_size):
 	_grids.resize(po+1)
 	for i in range(0, _grids.size()):
 		_grids[i] = {}
-	print("Grids: ", _grids.size())
+	#print("Grids: ", _grids.size())
 	
 	reset()
 
@@ -76,7 +80,7 @@ func _for_all_chunks_recursive(action_cb, node, lod_index):
 		if node.chunk != null:
 			action_cb.call_func(node.chunk, lod_index)
 
-
+# Copy paste from above...
 func _for_all_nodes(action_cb):
 	if _tree != null:
 		_for_all_nodes_recursive(action_cb, _tree, _max_depth)
@@ -98,22 +102,26 @@ func _recycle_chunk(chunk, origin, lod_index):
 	#print("Recycle ", OS.get_ticks_msec())
 	if recycle_chunk_func != null:
 		recycle_chunk_func.call_func(chunk)
-		_grids[lod_index].erase(origin)
+	_grids[lod_index].erase(origin)
 
 
 func _make_chunk(lod_index, origin):
 	#print("Recycle ", origin)
+	var chunk = null
 	if make_chunk_func != null:
-		var chunk = make_chunk_func.call_func(lod_index, origin)
-		if chunk != null:
-			_grids[lod_index][origin] = chunk
-		return chunk
-	return true # Placeholder output
+		chunk = make_chunk_func.call_func(lod_index, origin)
+	if chunk == null:
+		# Placeholder output
+		chunk = true
+	if chunk != null:
+		_grids[lod_index][origin] = chunk
+	return chunk
 
 
 func _update_nodes_recursive(node, lod_index, viewer_pos):
 	var lod_size = get_lod_size(lod_index)
-	var world_center = _base_size * (Vector3(node.origin.x, 0, node.origin.y) + Vector3(lod_size,0,lod_size)*0.5)
+	#var world_center = _base_size * (Vector3(node.origin.x, 0, node.origin.y) + Vector3(lod_size,0,lod_size)*0.5)
+	var world_center = (_base_size*lod_size) * (Vector3(node.origin.x, 0, node.origin.y) + Vector3(0.5, 0, 0.5))
 	
 	var split_distance = get_split_distance(lod_index)
 	
@@ -133,7 +141,7 @@ func _update_nodes_recursive(node, lod_index, viewer_pos):
 			for i in range(0, children.size()):
 				var j = int(round(i)) # https://github.com/godotengine/godot/issues/8278
 				var child = QuadtreeNode.new()
-				child.origin = node.origin + Vector2( j&1, (j&2)>>1 ) * (lod_size/2)
+				child.origin = node.origin*2 + Vector2( j&1, (j&2)>>1 )
 				#child.chunk = make_chunk(lod_index-1, child.origin)
 				children[i] = child
 			
@@ -207,12 +215,28 @@ func for_chunks_in_rect(action_cb, cx0, cy0, cw, ch):
 
 # Debug functions
 
-func debug_draw(ci):
+
+func debug_draw_grid(ci):
+	for lod_index in range(0, _grids.size()):
+		var grid = _grids[lod_index]
+		var lod_size = get_lod_size(lod_index)
+		for k in grid:
+			var checker = 0
+			if int(k.y)%2 == 1:
+				if int(k.x)%2 == 0:
+					checker = 1
+			else:
+				if int(k.x)%2 == 1:
+					checker = 1
+			ci.draw_rect(Rect2(k, Vector2(lod_size, lod_size)), Color(1.0-lod_index*0.2, 0.2*checker, 0, 1))
+
+
+func debug_draw_tree(ci):
 	var node = _tree
-	_debug_draw_recursive(ci, node, _max_depth, 0)
+	_debug_draw_tree_recursive(ci, node, _max_depth, 0)
 
 
-func _debug_draw_recursive(ci, node, lod_index, child_index):
+func _debug_draw_tree_recursive(ci, node, lod_index, child_index):
 	if node.children == null:
 		var size = get_lod_size(lod_index)
 		var checker = 0
@@ -221,8 +245,8 @@ func _debug_draw_recursive(ci, node, lod_index, child_index):
 		var chunk_indicator = 0
 		if node.chunk != null:
 			chunk_indicator = 1
-		ci.draw_rect(Rect2(node.origin, Vector2(size,size)), Color(1.0-lod_index*0.2,0.2*checker,chunk_indicator,1))
+		ci.draw_rect(Rect2(node.origin*size, Vector2(size,size)), Color(1.0-lod_index*0.2,0.2*checker,chunk_indicator,1))
 	else:
 		for i in range(0, node.children.size()):
 			var child = node.children[i]
-			_debug_draw_recursive(ci, child, lod_index-1, i)
+			_debug_draw_tree_recursive(ci, child, lod_index-1, i)

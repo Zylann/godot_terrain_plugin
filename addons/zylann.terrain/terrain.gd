@@ -78,11 +78,13 @@ func _ready():
 
 # Called when a chunk is needed at a given LOD
 func _make_lod_chunk_cb(lod_index, origin):
-	# TODO This is inefficient, should use chunk pooling
+	origin = origin * _lodder.get_lod_size(lod_index)
 	var x = round(origin.x)
 	var y = round(origin.y)
 	var chunk = Chunk.new()
+	# TODO This is inefficient, should use chunk pooling
 	chunk.create(x, y, CHUNK_SIZE, self, material)
+	# TODO Update should be deferred to dirty chunks list
 	update_chunk(chunk, lod_index)
 	if generate_colliders and lod_index == 0:
 		chunk.update_collider()
@@ -187,11 +189,11 @@ func set_area_dirty(tx, ty, radius, mark_for_undo=false, data_channel=DATA_HEIGH
 	
 	var cx_min = (tx - radius) / CHUNK_SIZE
 	var cy_min = (ty - radius) / CHUNK_SIZE
-	var cx_max = (tx + radius) / CHUNK_SIZE
-	var cy_max = (ty + radius) / CHUNK_SIZE
+	var cx_max = (tx + radius) / CHUNK_SIZE + 1
+	var cy_max = (ty + radius) / CHUNK_SIZE + 1
 	
-	for cy in range(cy_min, cy_max+1):
-		for cx in range(cx_min, cx_max+1):
+	for cy in range(cy_min, cy_max):
+		for cx in range(cx_min, cx_max):
 			if cx >= 0 and cy >= 0 and cx < _chunks_x and cy < _chunks_y:
 				_set_normals_chunk_dirty_at(cx, cy)
 				if mark_for_undo:
@@ -200,7 +202,9 @@ func set_area_dirty(tx, ty, radius, mark_for_undo=false, data_channel=DATA_HEIGH
 						var data = extract_chunk_data(cx, cy, data_channel)
 						_undo_chunks[k] = data
 	
-	_lodder.for_chunks_in_rect(funcref(self, "_set_lod_chunk_dirty_cb"), cx_min, cy_min, 2*radius, 2*radius)
+	var cw = cx_max - cx_min
+	var ch = cy_max - cy_min
+	_lodder.for_chunks_in_rect(funcref(self, "_set_lod_chunk_dirty_cb"), cx_min, cy_min, cw, ch)
 
 
 func _set_lod_chunk_dirty_cb(chunk, origin, lod_index):
