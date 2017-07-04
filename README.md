@@ -7,7 +7,7 @@ This is a heightmap-based terrain node for Godot Engine 2.1, written in GDScript
 
 Important
 -----------
-I ported this plugin to C++ as a module for Godot 3.0: https://github.com/Zylann/godot_heightmap_module
+I ported this plugin to C++ as a module for Godot 3.0: https://github.com/Zylann/godot_heightmap_module  
 I stopped support on the GDScript version.
 
 Features
